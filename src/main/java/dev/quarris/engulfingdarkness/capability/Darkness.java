@@ -9,6 +9,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
 
 public class Darkness implements IDarkness {
@@ -22,7 +23,7 @@ public class Darkness implements IDarkness {
         // Send packet to client to update whether they are in darkness
         // since clients light levels don't get fully updated
         if (!player.world.isRemote) {
-            int light = player.world.getLight(player.getPosition());
+            int light = player.world.getLight(new BlockPos(player.getEyePosition(1)));
             if (this.isInDarkness && light > ModConfigs.darknessLightLevel.get()) {
                 this.setInDarkness(false);
                 PacketHandler.sendToClient(new EnteredDarknessMessage(false), player);
