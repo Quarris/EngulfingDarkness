@@ -22,7 +22,7 @@ public class Darkness implements IDarkness {
     public void tick(PlayerEntity player) {
         // Send packet to client to update whether they are in darkness
         // since clients light levels don't get fully updated
-        if (!player.world.isRemote) {
+        if (!player.world.isRemote && ModConfigs.isAllowed(player.world.getDimensionKey().getLocation())) {
             int light = player.world.getLight(new BlockPos(player.getEyePosition(1)));
             if (this.isInDarkness && light > ModConfigs.darknessLightLevel.get()) {
                 this.setInDarkness(false);
@@ -35,12 +35,12 @@ public class Darkness implements IDarkness {
 
         // Update the darkness and danger levels
         if (this.isInDarkness) {
-            this.darknessLevel = (float) Math.min(this.darknessLevel + 0.01, 1);
+            this.darknessLevel = (float) Math.min(this.darknessLevel + ModConfigs.darknessLevelIncrement.get(), 1);
             if (this.darknessLevel == 1.0) {
-                this.dangerLevel = (float) Math.min(this.dangerLevel + 0.03, 1);
+                this.dangerLevel = (float) Math.min(this.dangerLevel + ModConfigs.dangerLevelIncrement.get(), 1);
             }
         } else {
-            this.darknessLevel = (float) Math.max(this.darknessLevel - 0.03, 0);
+            this.darknessLevel = (float) Math.max(this.darknessLevel - 3 * ModConfigs.darknessLevelIncrement.get(), 0);
             this.dangerLevel = 0;
         }
 
@@ -61,8 +61,8 @@ public class Darkness implements IDarkness {
         }
 
         // Damage player
-        if (!player.world.isRemote && this.dangerLevel == 1.0) {
-            player.attackEntityFrom(EngulfingDarkness.damageSource, 4);
+        if (!player.world.isRemote && this.dangerLevel == 1.0 && ModConfigs.darknessDamage.get() != 0) {
+            player.attackEntityFrom(EngulfingDarkness.damageSource, ModConfigs.darknessDamage.get().floatValue());
         }
     }
 
