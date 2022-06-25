@@ -34,8 +34,8 @@ public class EventHandler {
     public static void renderFog(EntityViewRenderEvent.RenderFogEvent event) {
         Minecraft.getInstance().player.getCapability(DarknessCapability.INST).ifPresent(darkness -> {
             if (darkness.getDarkness() > 0.01) {
-                float startFog = event.getMode() == FogRenderer.FogMode.FOG_SKY ?
-                    0 :
+                float startFog = //event.getMode() == FogRenderer.FogMode.FOG_SKY ?
+                    //0 :
                     event.getFarPlaneDistance() * 0.75f * (1 - darkness.getDarkness());
 
                 float endFog = 10 + event.getFarPlaneDistance() * (1 - darkness.getDarkness());
