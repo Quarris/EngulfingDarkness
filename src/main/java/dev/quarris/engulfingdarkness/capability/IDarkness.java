@@ -1,12 +1,12 @@
 package dev.quarris.engulfingdarkness.capability;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.util.INBTSerializable;
 
-public interface IDarkness extends INBTSerializable<CompoundNBT> {
+public interface IDarkness extends INBTSerializable<CompoundTag> {
 
     float getDarkness();
-    void tick(PlayerEntity player);
+    void tick(Player player);
     void setInDarkness(boolean inDarkness);
 }

@@ -2,8 +2,8 @@ package dev.quarris.engulfingdarkness.packets;
 
 import dev.quarris.engulfingdarkness.capability.DarknessCapability;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
@@ -14,11 +14,11 @@ public class EnteredDarknessMessage {
         this.entered = entered;
     }
 
-    public static void encode(EnteredDarknessMessage msg, PacketBuffer buf) {
+    public static void encode(EnteredDarknessMessage msg, FriendlyByteBuf buf) {
         buf.writeBoolean(msg.entered);
     }
 
-    public static EnteredDarknessMessage decode(PacketBuffer buf) {
+    public static EnteredDarknessMessage decode(FriendlyByteBuf buf) {
         return new EnteredDarknessMessage(buf.readBoolean());
     }
 

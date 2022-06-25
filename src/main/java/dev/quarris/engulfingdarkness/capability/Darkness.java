@@ -4,13 +4,12 @@ import dev.quarris.engulfingdarkness.EngulfingDarkness;
 import dev.quarris.engulfingdarkness.ModConfigs;
 import dev.quarris.engulfingdarkness.packets.EnteredDarknessMessage;
 import dev.quarris.engulfingdarkness.packets.PacketHandler;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.particles.ParticleTypes;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.player.Player;
 
 public class Darkness implements IDarkness {
 
@@ -19,17 +18,23 @@ public class Darkness implements IDarkness {
     private float dangerLevel;
 
     @Override
-    public void tick(PlayerEntity player) {
+    public void tick(Player player) {
         // Send packet to client to update whether they are in darkness
         // since clients light levels don't get fully updated
-        if (!player.world.isRemote && ModConfigs.isAllowed(player.world.getDimensionKey().getLocation())) {
-            int light = player.world.getLight(new BlockPos(player.getEyePosition(1)));
-            if (this.isInDarkness && light > ModConfigs.darknessLightLevel.get()) {
+        if (!player.level.isClientSide() && ModConfigs.isAllowed(player.level.dimension().location())) {
+            if (player.isCreative() && this.isInDarkness) {
                 this.setInDarkness(false);
                 PacketHandler.sendToClient(new EnteredDarknessMessage(false), player);
-            } else if (!this.isInDarkness && light <= ModConfigs.darknessLightLevel.get()) {
-                this.setInDarkness(true);
-                PacketHandler.sendToClient(new EnteredDarknessMessage(true), player);
+                return;
+            } else {
+                int light = player.level.getLightEngine().getRawBrightness(new BlockPos(player.getEyePosition(1)), 0);
+                if (this.isInDarkness && (player.isCreative() || light > ModConfigs.darknessLightLevel.get())) {
+                    this.setInDarkness(false);
+                    PacketHandler.sendToClient(new EnteredDarknessMessage(false), player);
+                } else if (!player.isCreative() && !this.isInDarkness && light <= ModConfigs.darknessLightLevel.get()) {
+                    this.setInDarkness(true);
+                    PacketHandler.sendToClient(new EnteredDarknessMessage(true), player);
+                }
             }
         }
 
@@ -45,24 +50,24 @@ public class Darkness implements IDarkness {
         }
 
         // Spawn Particles
-        if (!player.world.isRemote && this.darknessLevel > 0.0) {
+        if (!player.level.isClientSide() && this.darknessLevel > 0.0) {
             double rx = (-1 + Math.random() * 2) * 0.3;
             double ry = Math.random();
             double rz = (-1 + Math.random() * 2) * 0.3;
-            double mx = player.getRNG().nextGaussian() * 0.2;
-            double my = player.getRNG().nextGaussian() * 0.2;
-            double mz = player.getRNG().nextGaussian() * 0.2;
-            ((ServerWorld) player.world).spawnParticle(ParticleTypes.SMOKE, player.getPosX() + rx, player.getPosY() + ry, player.getPosZ() + rz, (int) (this.darknessLevel * 10), mx, my, mz, 0.01);
+            double mx = player.getRandom().nextGaussian() * 0.2;
+            double my = player.getRandom().nextGaussian() * 0.2;
+            double mz = player.getRandom().nextGaussian() * 0.2;
+            ((ServerLevel) player.level).sendParticles(ParticleTypes.SMOKE, player.getX() + rx, player.getY() + ry, player.getZ() + rz, (int) (this.darknessLevel * 10), mx, my, mz, 0.01);
         }
 
         // Play sound to player
-        if (player.world.isRemote && this.darknessLevel == 1.0 && player.getRNG().nextDouble() > 0.95) {
-            player.playSound(SoundEvents.AMBIENT_CRIMSON_FOREST_MOOD, SoundCategory.AMBIENT, 1, 0.1f);
+        if (player.level.isClientSide() && this.darknessLevel == 1.0 && player.getRandom().nextDouble() > 0.95) {
+            player.playSound(SoundEvents.AMBIENT_CRIMSON_FOREST_MOOD, 1, 0.1f);
         }
 
         // Damage player
-        if (!player.world.isRemote && this.dangerLevel == 1.0 && ModConfigs.darknessDamage.get() != 0) {
-            player.attackEntityFrom(EngulfingDarkness.damageSource, ModConfigs.darknessDamage.get().floatValue());
+        if (!player.level.isClientSide() && this.dangerLevel == 1.0 && ModConfigs.darknessDamage.get() != 0) {
+            player.hurt(EngulfingDarkness.damageSource, ModConfigs.darknessDamage.get().floatValue());
         }
     }
 
@@ -77,8 +82,8 @@ public class Darkness implements IDarkness {
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT nbt = new CompoundNBT();
+    public CompoundTag serializeNBT() {
+        CompoundTag nbt = new CompoundTag();
         nbt.putFloat("Darkness", this.darknessLevel);
         nbt.putFloat("Danger", this.dangerLevel);
         nbt.putBoolean("IsInDarkness", this.isInDarkness);
@@ -86,7 +91,7 @@ public class Darkness implements IDarkness {
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
+    public void deserializeNBT(CompoundTag nbt) {
         this.darknessLevel = nbt.getFloat("Darkness");
         this.dangerLevel = nbt.getFloat("Danger");
         this.isInDarkness = nbt.getBoolean("IsInDarkness");

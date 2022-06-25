@@ -1,7 +1,7 @@
 package dev.quarris.engulfingdarkness;
 
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.util.ArrayList;
@@ -47,7 +47,7 @@ public class ModConfigs {
 
     private static List<String> defaultDims() {
         List<String> list = new ArrayList<>();
-        list.add(World.OVERWORLD.getLocation().toString());
+        list.add(Level.OVERWORLD.location().toString());
         return list;
     }
 }

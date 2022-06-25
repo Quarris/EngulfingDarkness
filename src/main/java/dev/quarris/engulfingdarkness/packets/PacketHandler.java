@@ -1,11 +1,11 @@
 package dev.quarris.engulfingdarkness.packets;
 
 import dev.quarris.engulfingdarkness.ModRef;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkRegistry;
-import net.minecraftforge.fml.network.simple.SimpleChannel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.simple.SimpleChannel;
 
 public class PacketHandler {
 
@@ -22,8 +22,8 @@ public class PacketHandler {
         INST.registerMessage(1, EnteredDarknessMessage.class, EnteredDarknessMessage::encode, EnteredDarknessMessage::decode, EnteredDarknessMessage::handle);
     }
 
-    public static <MSG> void sendToClient(MSG msg, PlayerEntity player) {
-        INST.sendTo(msg, ((ServerPlayerEntity) player).connection.getNetworkManager(), NetworkDirection.PLAY_TO_CLIENT);
+    public static <MSG> void sendToClient(MSG msg, Player player) {
+        INST.sendTo(msg, ((ServerPlayer) player).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
     }
 
 }

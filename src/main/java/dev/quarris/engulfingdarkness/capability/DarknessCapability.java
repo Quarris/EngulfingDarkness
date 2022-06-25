@@ -1,37 +1,25 @@
 package dev.quarris.engulfingdarkness.capability;
 
 import dev.quarris.engulfingdarkness.ModRef;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.capabilities.*;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class DarknessCapability implements ICapabilitySerializable<CompoundNBT> {
+public class DarknessCapability implements ICapabilitySerializable<CompoundTag> {
 
     public static final ResourceLocation KEY = ModRef.res("darkness");
 
-    @CapabilityInject(IDarkness.class)
-    public static Capability<IDarkness> INST;
+    public static final Capability<IDarkness> INST = CapabilityManager.get(new CapabilityToken<>() {});
 
-    public static void register() {
-        CapabilityManager.INSTANCE.register(IDarkness.class, new Capability.IStorage<IDarkness>() {
-            @Nullable
-            @Override
-            public INBT writeNBT(Capability<IDarkness> capability, IDarkness instance, Direction side) {
-                return instance.serializeNBT();
-            }
-
-            @Override
-            public void readNBT(Capability<IDarkness> capability, IDarkness instance, Direction side, INBT nbt) {
-                instance.deserializeNBT((CompoundNBT) nbt);
-            }
-        }, Darkness::new);
+    public static void register(RegisterCapabilitiesEvent event) {
+        event.register(IDarkness.class);
     }
 
     private final LazyOptional<IDarkness> lazyThis;
@@ -50,12 +38,12 @@ public class DarknessCapability implements ICapabilitySerializable<CompoundNBT> 
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        return this.lazyThis.map(INBTSerializable::serializeNBT).orElse(new CompoundNBT());
+    public CompoundTag serializeNBT() {
+        return this.lazyThis.map(INBTSerializable::serializeNBT).orElse(new CompoundTag());
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
+    public void deserializeNBT(CompoundTag nbt) {
         this.lazyThis.ifPresent(darkness -> darkness.deserializeNBT(nbt));
     }
 }

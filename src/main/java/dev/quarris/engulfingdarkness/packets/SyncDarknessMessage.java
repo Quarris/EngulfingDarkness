@@ -2,26 +2,26 @@ package dev.quarris.engulfingdarkness.packets;
 
 import dev.quarris.engulfingdarkness.capability.DarknessCapability;
 import net.minecraft.client.Minecraft;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
 public class SyncDarknessMessage {
 
-    private final CompoundNBT nbt;
+    private final CompoundTag nbt;
 
-    public SyncDarknessMessage(CompoundNBT nbt) {
+    public SyncDarknessMessage(CompoundTag nbt) {
         this.nbt = nbt;
     }
 
-    public static void encode(SyncDarknessMessage msg, PacketBuffer buf) {
-        buf.writeCompoundTag(msg.nbt);
+    public static void encode(SyncDarknessMessage msg, FriendlyByteBuf buf) {
+        buf.writeNbt(msg.nbt);
     }
 
-    public static SyncDarknessMessage decode(PacketBuffer buf) {
-        return new SyncDarknessMessage(buf.readCompoundTag());
+    public static SyncDarknessMessage decode(FriendlyByteBuf buf) {
+        return new SyncDarknessMessage(buf.readNbt());
     }
 
     public static void handle(SyncDarknessMessage msg, Supplier<NetworkEvent.Context> ctx) {
