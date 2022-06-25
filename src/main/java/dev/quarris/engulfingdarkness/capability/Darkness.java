@@ -27,7 +27,7 @@ public class Darkness implements IDarkness {
                 PacketHandler.sendToClient(new EnteredDarknessMessage(false), player);
                 return;
             } else {
-                int light = player.level.getLightEngine().getRawBrightness(new BlockPos(player.getEyePosition(1)), 0);
+                int light = player.level.getMaxLocalRawBrightness(new BlockPos(player.getEyePosition(1)), 0);
                 if (this.isInDarkness && (player.isCreative() || light > ModConfigs.darknessLightLevel.get())) {
                     this.setInDarkness(false);
                     PacketHandler.sendToClient(new EnteredDarknessMessage(false), player);
@@ -66,7 +66,7 @@ public class Darkness implements IDarkness {
         }
 
         // Damage player
-        if (!player.level.isClientSide() && this.dangerLevel == 1.0 && ModConfigs.darknessDamage.get() != 0) {
+        if (this.dangerLevel == 1.0 && ModConfigs.darknessDamage.get() != 0) {
             player.hurt(EngulfingDarkness.damageSource, ModConfigs.darknessDamage.get().floatValue());
         }
     }
