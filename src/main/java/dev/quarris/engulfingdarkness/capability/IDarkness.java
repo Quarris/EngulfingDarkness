@@ -9,4 +9,6 @@ public interface IDarkness extends INBTSerializable<CompoundTag> {
     float getDarkness();
     void tick(Player player);
     void setInDarkness(boolean inDarkness);
+
+    boolean isResistant(Player player);
 }

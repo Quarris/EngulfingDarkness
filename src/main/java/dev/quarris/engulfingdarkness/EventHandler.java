@@ -7,7 +7,9 @@ import dev.quarris.engulfingdarkness.packets.PacketHandler;
 import dev.quarris.engulfingdarkness.packets.SyncDarknessMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogRenderer;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
@@ -70,5 +72,11 @@ public class EventHandler {
         event.getPlayer().getCapability(DarknessCapability.INST).ifPresent(darkness -> {
             PacketHandler.sendToClient(new SyncDarknessMessage(darkness.serializeNBT()), event.getPlayer());
         });
+
+        CompoundTag persitentData = event.getPlayer().getPersistentData();
+        if (!persitentData.contains("FirstJoin")) {
+            persitentData.putBoolean("FirstJoin", true);
+            event.getPlayer().addEffect(new MobEffectInstance(EngulfingDarkness.veiledMobEffect, ModConfigs.spawnVeiledTimer.get() * 20));
+        }
     }
 }
