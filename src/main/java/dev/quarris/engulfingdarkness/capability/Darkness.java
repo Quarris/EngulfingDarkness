@@ -22,13 +22,12 @@ public class Darkness implements IDarkness {
         // Send packet to client to update whether they are in darkness
         // since clients light levels don't get fully updated
         if (!player.level.isClientSide() && ModConfigs.isAllowed(player.level.dimension().location())) {
-            if (player.isCreative() && this.isInDarkness) {
+            if (this.isResistant(player)) {
                 this.setInDarkness(false);
                 PacketHandler.sendToClient(new EnteredDarknessMessage(false), player);
-                return;
             } else {
-                int light = player.level.getMaxLocalRawBrightness(new BlockPos(player.getEyePosition(1)), 0);
-                if (this.isInDarkness && (player.isCreative() || light > ModConfigs.darknessLightLevel.get())) {
+                int light = player.level.getMaxLocalRawBrightness(new BlockPos(player.getEyePosition(1)));
+                if (this.isInDarkness && (this.isResistant(player) || light > ModConfigs.darknessLightLevel.get())) {
                     this.setInDarkness(false);
                     PacketHandler.sendToClient(new EnteredDarknessMessage(false), player);
                 } else if (!player.isCreative() && !this.isInDarkness && light <= ModConfigs.darknessLightLevel.get()) {
@@ -50,7 +49,7 @@ public class Darkness implements IDarkness {
         }
 
         // Spawn Particles
-        if (!player.level.isClientSide() && this.darknessLevel > 0.0) {
+        if (!player.level.isClientSide() && this.isInDarkness) {
             double rx = (-1 + Math.random() * 2) * 0.3;
             double ry = Math.random();
             double rz = (-1 + Math.random() * 2) * 0.3;
@@ -79,6 +78,11 @@ public class Darkness implements IDarkness {
     @Override
     public float getDarkness() {
         return this.darknessLevel;
+    }
+
+    @Override
+    public boolean isResistant(Player player) {
+        return player.isCreative() || player.hasEffect(EngulfingDarkness.veiledMobEffect);
     }
 
     @Override

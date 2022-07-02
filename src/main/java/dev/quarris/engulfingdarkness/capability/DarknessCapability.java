@@ -18,9 +18,7 @@ public class DarknessCapability implements ICapabilitySerializable<CompoundTag> 
 
     public static final Capability<IDarkness> INST = CapabilityManager.get(new CapabilityToken<>() {});
 
-    public static void register(RegisterCapabilitiesEvent event) {
-        event.register(IDarkness.class);
-    }
+
 
     private final LazyOptional<IDarkness> lazyThis;
 
