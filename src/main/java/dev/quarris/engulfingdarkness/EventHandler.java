@@ -61,6 +61,18 @@ public class EventHandler {
     }
 
     @SubscribeEvent
+    public static void applyEffectOnRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (event.isEndConquered() || event.getPlayer().level.isClientSide) {
+            return;
+        }
+
+        var time = ModConfigs.spawnVeiledTimer.get() * 20;
+        if (time > 0) {
+            event.getPlayer().addEffect(new MobEffectInstance(EngulfingDarkness.veiledMobEffect, time));
+        }
+    }
+
+    @SubscribeEvent
     public static void playerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
             event.player.getCapability(DarknessCapability.INST).ifPresent(darkness -> darkness.tick(event.player));
@@ -76,7 +88,10 @@ public class EventHandler {
         CompoundTag persitentData = event.getPlayer().getPersistentData();
         if (!persitentData.contains("FirstJoin")) {
             persitentData.putBoolean("FirstJoin", true);
-            event.getPlayer().addEffect(new MobEffectInstance(EngulfingDarkness.veiledMobEffect, ModConfigs.spawnVeiledTimer.get() * 20));
+            var time = ModConfigs.spawnVeiledTimer.get() * 20;
+            if (time > 0) {
+                event.getPlayer().addEffect(new MobEffectInstance(EngulfingDarkness.veiledMobEffect, time));
+            }
         }
     }
 }
