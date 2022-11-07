@@ -14,7 +14,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.EntityViewRenderEvent;
+import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -33,11 +33,11 @@ public class EventHandler {
 
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
-    public static void renderFog(EntityViewRenderEvent.RenderFogEvent event) {
+    public static void renderFog(ViewportEvent.RenderFog event) {
         Minecraft.getInstance().player.getCapability(DarknessCapability.INST).ifPresent(darkness -> {
             if (darkness.getDarkness() > 0.01) {
-                float startFog = //event.getMode() == FogRenderer.FogMode.FOG_SKY ?
-                    //0 :
+                float startFog = event.getMode() == FogRenderer.FogMode.FOG_SKY ?
+                    0 :
                     event.getFarPlaneDistance() * 0.75f * (1 - darkness.getDarkness());
 
                 float endFog = 10 + event.getFarPlaneDistance() * (1 - darkness.getDarkness());
@@ -49,7 +49,7 @@ public class EventHandler {
 
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
-    public static void applyFogColors(EntityViewRenderEvent.FogColors event) {
+    public static void applyFogColors(ViewportEvent.ComputeFogColor event) {
         Minecraft.getInstance().player.getCapability(DarknessCapability.INST).ifPresent(darkness -> {
             if (darkness.getDarkness() > 0.01) {
                 float perc = 1 - darkness.getDarkness();
@@ -62,13 +62,13 @@ public class EventHandler {
 
     @SubscribeEvent
     public static void applyEffectOnRespawn(PlayerEvent.PlayerRespawnEvent event) {
-        if (event.isEndConquered() || event.getPlayer().level.isClientSide) {
+        if (event.isEndConquered() || event.getEntity().level.isClientSide) {
             return;
         }
 
         var time = ModConfigs.spawnVeiledTimer.get() * 20;
         if (time > 0) {
-            event.getPlayer().addEffect(new MobEffectInstance(EngulfingDarkness.veiledMobEffect, time));
+            event.getEntity().addEffect(new MobEffectInstance(EngulfingDarkness.veiledMobEffect, time));
         }
     }
 
@@ -81,16 +81,16 @@ public class EventHandler {
 
     @SubscribeEvent
     public static void syncOnLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        event.getPlayer().getCapability(DarknessCapability.INST).ifPresent(darkness -> {
-            PacketHandler.sendToClient(new SyncDarknessMessage(darkness.serializeNBT()), event.getPlayer());
+        event.getEntity().getCapability(DarknessCapability.INST).ifPresent(darkness -> {
+            PacketHandler.sendToClient(new SyncDarknessMessage(darkness.serializeNBT()), event.getEntity());
         });
 
-        CompoundTag persitentData = event.getPlayer().getPersistentData();
+        CompoundTag persitentData = event.getEntity().getPersistentData();
         if (!persitentData.contains("FirstJoin")) {
             persitentData.putBoolean("FirstJoin", true);
             var time = ModConfigs.spawnVeiledTimer.get() * 20;
             if (time > 0) {
-                event.getPlayer().addEffect(new MobEffectInstance(EngulfingDarkness.veiledMobEffect, time));
+                event.getEntity().addEffect(new MobEffectInstance(EngulfingDarkness.veiledMobEffect, time));
             }
         }
     }
