@@ -1,5 +1,6 @@
 package dev.quarris.engulfingdarkness.packets;
 
+import dev.quarris.engulfingdarkness.ModRef;
 import dev.quarris.engulfingdarkness.capability.DarknessCapability;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
@@ -26,7 +27,7 @@ public class SyncDarknessMessage {
 
     public static void handle(SyncDarknessMessage msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            Minecraft.getInstance().player.getCapability(DarknessCapability.INST).ifPresent(darkness -> {
+            Minecraft.getInstance().player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> {
                 darkness.deserializeNBT(msg.nbt);
             });
         });

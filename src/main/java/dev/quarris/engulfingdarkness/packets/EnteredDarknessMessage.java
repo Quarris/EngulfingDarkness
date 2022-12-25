@@ -1,6 +1,6 @@
 package dev.quarris.engulfingdarkness.packets;
 
-import dev.quarris.engulfingdarkness.capability.DarknessCapability;
+import dev.quarris.engulfingdarkness.ModRef;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
@@ -23,7 +23,7 @@ public class EnteredDarknessMessage {
     }
 
     public static void handle(EnteredDarknessMessage msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> Minecraft.getInstance().player.getCapability(DarknessCapability.INST).ifPresent(darkness -> darkness.setInDarkness(msg.entered)));
+        ctx.get().enqueueWork(() -> Minecraft.getInstance().player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> darkness.setInDarkness(msg.entered)));
         ctx.get().setPacketHandled(true);
     }
 }

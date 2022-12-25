@@ -6,9 +6,18 @@ import net.minecraftforge.common.util.INBTSerializable;
 
 public interface IDarkness extends INBTSerializable<CompoundTag> {
 
+    float MAX_BURNOUT = 32.0f;
+
     float getDarkness();
-    void tick(Player player);
+    float getBurnout();
+
     void setInDarkness(boolean inDarkness);
 
     boolean isResistant(Player player);
+
+    void tick(Player player);
+
+    boolean isInDarkness();
+
+    float getDanger();
 }

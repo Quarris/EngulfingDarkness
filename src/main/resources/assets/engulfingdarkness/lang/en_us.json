@@ -1,5 +1,5 @@
 {
     "death.attack.engulfingDarkness": "%1$s could not reach the light",
-    "effect.engulfingdarkness.veiled": "Veiled",
-    "item.minecraft.potion.effect.veiled": "Potion of Veil"
+    "effect.engulfingdarkness.soul_veil": "Soul Veil",
+    "item.minecraft.potion.effect.soul_veil": "Potion of Veil"
 }

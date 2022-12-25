@@ -1,11 +1,11 @@
-package dev.quarris.engulfingdarkness;
+package dev.quarris.engulfingdarkness.content;
 
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 
-public class VeiledMobEffect extends MobEffect {
+public class SoulVeilMobEffect extends MobEffect {
 
-    protected VeiledMobEffect() {
+    public SoulVeilMobEffect() {
         super(MobEffectCategory.BENEFICIAL, 0xffcd61);
     }
 }

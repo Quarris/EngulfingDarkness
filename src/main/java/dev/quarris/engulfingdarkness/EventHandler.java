@@ -34,7 +34,7 @@ public class EventHandler {
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     public static void renderFog(ViewportEvent.RenderFog event) {
-        Minecraft.getInstance().player.getCapability(DarknessCapability.INST).ifPresent(darkness -> {
+        Minecraft.getInstance().player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> {
             if (darkness.getDarkness() > 0.01) {
                 float startFog = event.getMode() == FogRenderer.FogMode.FOG_SKY ?
                     0 :
@@ -50,7 +50,7 @@ public class EventHandler {
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     public static void applyFogColors(ViewportEvent.ComputeFogColor event) {
-        Minecraft.getInstance().player.getCapability(DarknessCapability.INST).ifPresent(darkness -> {
+        Minecraft.getInstance().player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> {
             if (darkness.getDarkness() > 0.01) {
                 float perc = 1 - darkness.getDarkness();
                 event.setRed(Mth.lerp(perc, 0, event.getRed()));
@@ -68,20 +68,20 @@ public class EventHandler {
 
         var time = ModConfigs.spawnVeiledTimer.get() * 20;
         if (time > 0) {
-            event.getEntity().addEffect(new MobEffectInstance(EngulfingDarkness.veiledMobEffect, time));
+            event.getEntity().addEffect(new MobEffectInstance(ModRegistry.VEILED_EFFECT.get(), time));
         }
     }
 
     @SubscribeEvent
     public static void playerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
-            event.player.getCapability(DarknessCapability.INST).ifPresent(darkness -> darkness.tick(event.player));
+            event.player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> darkness.tick(event.player));
         }
     }
 
     @SubscribeEvent
     public static void syncOnLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        event.getEntity().getCapability(DarknessCapability.INST).ifPresent(darkness -> {
+        event.getEntity().getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> {
             PacketHandler.sendToClient(new SyncDarknessMessage(darkness.serializeNBT()), event.getEntity());
         });
 
@@ -90,7 +90,7 @@ public class EventHandler {
             persitentData.putBoolean("FirstJoin", true);
             var time = ModConfigs.spawnVeiledTimer.get() * 20;
             if (time > 0) {
-                event.getEntity().addEffect(new MobEffectInstance(EngulfingDarkness.veiledMobEffect, time));
+                event.getEntity().addEffect(new MobEffectInstance(ModRegistry.VEILED_EFFECT.get(), time));
             }
         }
     }
