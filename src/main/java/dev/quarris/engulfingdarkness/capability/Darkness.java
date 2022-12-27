@@ -1,5 +1,6 @@
 package dev.quarris.engulfingdarkness.capability;
 
+import dev.quarris.engulfingdarkness.EnchantmentUtils;
 import dev.quarris.engulfingdarkness.ModConfigs;
 import dev.quarris.engulfingdarkness.ModRef;
 import dev.quarris.engulfingdarkness.ModRegistry;
@@ -10,6 +11,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -79,7 +81,8 @@ public class Darkness implements IDarkness {
 
             if (!player.level.isClientSide()) {
                 if (held.isDamageableItem()) {
-                    held.hurtAndBreak(1, player, p -> {});
+                    held.hurtAndBreak(1, player, p -> {
+                    });
                 } else {
                     held.shrink(1);
                 }
@@ -90,17 +93,26 @@ public class Darkness implements IDarkness {
     private void updateDarknessLevels(Player player) {
         // If not in darkness, reset the levels.
         ItemStack heldLight = this.getHeldLight(player);
+
+        double darknessTimer = ModConfigs.darknessTimer.get();
+        double dangerTimer = ModConfigs.dangerTimer.get();
+        int valianceLevel = EnchantmentUtils.getEnchantment(player, ModRegistry.Enchantments.VALIANCE.get(), EquipmentSlot.HEAD);
+        if (valianceLevel > 0) {
+            darknessTimer += 2 * valianceLevel;
+            dangerTimer += 2 * valianceLevel;
+        }
+
         if (!this.isInDarkness || (!heldLight.isEmpty() && this.burnout > 0)) {
-            this.darknessLevel = (float) Math.max(this.darknessLevel - 3 * ModConfigs.darknessLevelIncrement.get(), 0);
+            this.darknessLevel = (float) Math.max(this.darknessLevel - 3 / (darknessTimer * 20), 0);
             this.dangerLevel = 0;
             return;
         }
 
         // Update the darkness and danger levels when in darkness
         if (heldLight.isEmpty() || this.burnout <= 0) {
-            this.darknessLevel = (float) Math.min(this.darknessLevel + ModConfigs.darknessLevelIncrement.get(), 1);
+            this.darknessLevel = (float) Math.min(this.darknessLevel + 1 / (darknessTimer * 20), 1);
             if (this.darknessLevel == 1.0) {
-                this.dangerLevel = (float) Math.min(this.dangerLevel + ModConfigs.dangerLevelIncrement.get(), 1);
+                this.dangerLevel = (float) Math.min(this.dangerLevel + 1 / (dangerTimer * 20), 1);
             }
         }
 
@@ -127,7 +139,8 @@ public class Darkness implements IDarkness {
 
     private void dealDarknessDamage(Player player) {
         if (this.dangerLevel == 1.0 && ModConfigs.darknessDamage.get() != 0) {
-            player.hurt(ModRef.DARKNESS_DAMAGE, ModConfigs.darknessDamage.get().floatValue());
+            float perc = ModConfigs.darknessDamage.get().floatValue() / 20;
+            player.hurt(ModRef.DARKNESS_DAMAGE, player.getMaxHealth() * perc);
         }
     }
 
@@ -197,7 +210,7 @@ public class Darkness implements IDarkness {
 
     @Override
     public boolean isResistant(Player player) {
-        return player.isCreative() || player.hasEffect(ModRegistry.VEILED_EFFECT.get());
+        return player.isCreative() || player.hasEffect(ModRegistry.Effects.VEILED.get());
     }
 
     @Override

@@ -5,7 +5,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 
 public class SoulSentinelEnchantment extends Enchantment {
-    protected SoulSentinelEnchantment() {
+    public SoulSentinelEnchantment() {
         super(Rarity.VERY_RARE, EnchantmentCategory.ARMOR_CHEST, new EquipmentSlot[]{EquipmentSlot.CHEST});
     }
 

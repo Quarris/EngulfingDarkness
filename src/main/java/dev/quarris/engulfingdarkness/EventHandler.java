@@ -68,7 +68,7 @@ public class EventHandler {
 
         var time = ModConfigs.spawnVeiledTimer.get() * 20;
         if (time > 0) {
-            event.getEntity().addEffect(new MobEffectInstance(ModRegistry.VEILED_EFFECT.get(), time));
+            event.getEntity().addEffect(new MobEffectInstance(ModRegistry.Effects.VEILED.get(), time));
         }
     }
 
@@ -90,7 +90,7 @@ public class EventHandler {
             persitentData.putBoolean("FirstJoin", true);
             var time = ModConfigs.spawnVeiledTimer.get() * 20;
             if (time > 0) {
-                event.getEntity().addEffect(new MobEffectInstance(ModRegistry.VEILED_EFFECT.get(), time));
+                event.getEntity().addEffect(new MobEffectInstance(ModRegistry.Effects.VEILED.get(), time));
             }
         }
     }

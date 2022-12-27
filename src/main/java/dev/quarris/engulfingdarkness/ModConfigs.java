@@ -16,6 +16,8 @@ public class ModConfigs {
     public static ForgeConfigSpec.DoubleValue darknessDamage;
     public static ForgeConfigSpec.DoubleValue darknessLevelIncrement;
     public static ForgeConfigSpec.DoubleValue dangerLevelIncrement;
+    public static ForgeConfigSpec.DoubleValue dangerTimer;
+    public static ForgeConfigSpec.DoubleValue darknessTimer;
 
     public static ForgeConfigSpec.IntValue spawnVeiledTimer;
 
@@ -31,18 +33,23 @@ public class ModConfigs {
         builder.pop();
 
         darknessDamage = builder.defineInRange("darkness_damage", 4.0, 0.0, 100.0);
-
-        darknessLevelIncrement = builder.comment(
-            "How fast does the darkness engulf when in low light level."
-        ).defineInRange("darkness_increment", 0.01, 0.001, 1.0);
-
-        dangerLevelIncrement = builder.comment(
-            "Once in full darkness, how fast until the damage starts to trigger."
-        ).defineInRange("danger_increment", 0.03, 0.001, 1.0);
-
+        darknessTimer = builder.comment(
+                "Amount of time (in seconds) for the darkness to fully engulf you."
+        ).defineInRange("darkness_timer", 5.0, 1.0, 600.0);
+        dangerTimer = builder.comment(
+                "Amount of time (in seconds) for the player to start taking damage after fully engulfed."
+        ).defineInRange("danger_timer", 2.0, 1.0, 600.0);
         spawnVeiledTimer = builder.comment(
                 "Amount of time the Veiled effect will last (in seconds) when first joining the world or after each death. Set to 0 to never apply the effect."
         ).defineInRange("spawn_veiled_timer", 300, 0, 1000000);
+
+        darknessLevelIncrement = builder.comment(
+                "[DEPRECATED (use darkness_timer)] How fast does the darkness engulf when in low light level."
+        ).defineInRange("darkness_increment", 0.01, 0.001, 1.0);
+
+        dangerLevelIncrement = builder.comment(
+                "DEPRECATED (use danger_timer)] Once in full darkness, how fast until the damage starts to trigger."
+        ).defineInRange("danger_increment", 0.03, 0.001, 1.0);
         return builder;
     }
 

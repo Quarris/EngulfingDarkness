@@ -11,20 +11,13 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 @Mod(ModRef.ID)
 public class EngulfingDarkness {
-
-
     public EngulfingDarkness() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         modBus.addListener(this::commonSetup);
         ModRegistry.init(modBus);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ModConfigs.init(new ForgeConfigSpec.Builder()).build());
     }
-
     public void commonSetup(FMLCommonSetupEvent event) {
         PacketHandler.register();
     }
-
-
-
-
 }

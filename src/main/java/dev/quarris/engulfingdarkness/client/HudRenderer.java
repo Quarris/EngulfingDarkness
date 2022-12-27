@@ -32,7 +32,7 @@ public class HudRenderer {
         if (player == null) return;
 
         player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> {
-            if (darkness.getBurnout() >= IDarkness.MAX_BURNOUT) return;
+            if (!darkness.isInDarkness() || darkness.getBurnout() >= IDarkness.MAX_BURNOUT) return;
 
             Window window = gui.getMinecraft().getWindow();
 
@@ -47,17 +47,15 @@ public class HudRenderer {
             GuiComponent.blit(poseStack, barX, barY, 0, 0, 0, barWidth, barHeight, 256, 256);
             GuiComponent.blit(poseStack, barX, barY, 0, 0, 5, (int) renderWidth, barHeight, 256, 256);
 
-                /*
-                barY = 15;
-                renderWidth = barWidth * (1 - darkness.getDarkness());
-                GuiComponent.blit(poseStack, barX, barY, 0, 0, 0, barWidth, barHeight, 256, 256);
-                GuiComponent.blit(poseStack, barX, barY, 0, 0, 5, (int) renderWidth, barHeight, 256, 256);
+            barY = 15;
+            renderWidth = barWidth * (1 - darkness.getDarkness());
+            GuiComponent.blit(poseStack, barX, barY, 0, 0, 0, barWidth, barHeight, 256, 256);
+            GuiComponent.blit(poseStack, barX, barY, 0, 0, 5, (int) renderWidth, barHeight, 256, 256);
 
-                barY = 25;
-                renderWidth = barWidth * (1 - darkness.getDanger());
-                GuiComponent.blit(poseStack, barX, barY, 0, 0, 0, barWidth, barHeight, 256, 256);
-                GuiComponent.blit(poseStack, barX, barY, 0, 0, 5, (int) renderWidth, barHeight, 256, 256);
-                */
+            barY = 25;
+            renderWidth = barWidth * (1 - darkness.getDanger());
+            GuiComponent.blit(poseStack, barX, barY, 0, 0, 0, barWidth, barHeight, 256, 256);
+            GuiComponent.blit(poseStack, barX, barY, 0, 0, 5, (int) renderWidth, barHeight, 256, 256);
         });
     }
 }

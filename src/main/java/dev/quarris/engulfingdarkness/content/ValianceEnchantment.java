@@ -5,7 +5,12 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 
 public class ValianceEnchantment extends Enchantment {
-    protected ValianceEnchantment(Rarity rarity) {
+    public ValianceEnchantment() {
         super(Rarity.RARE, EnchantmentCategory.ARMOR_HEAD, new EquipmentSlot[]{EquipmentSlot.HEAD});
+    }
+
+    @Override
+    public int getMaxLevel() {
+        return 3;
     }
 }

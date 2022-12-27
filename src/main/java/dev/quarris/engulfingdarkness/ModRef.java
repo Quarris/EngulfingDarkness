@@ -25,7 +25,7 @@ public class ModRef {
         return new ResourceLocation(ID, res);
     }
 
-    public static final DamageSource DARKNESS_DAMAGE = new DamageSource("engulfingDarkness").bypassMagic().bypassArmor().setScalesWithDifficulty();
+    public static final DamageSource DARKNESS_DAMAGE = new DamageSource("engulfingDarkness").bypassMagic().bypassEnchantments().bypassArmor().setScalesWithDifficulty();
 
     public static class Capabilities {
         public static final Capability<IDarkness> DARKNESS = CapabilityManager.get(new CapabilityToken<>() {});
