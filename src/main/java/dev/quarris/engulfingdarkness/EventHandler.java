@@ -17,7 +17,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingHealEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -69,7 +68,7 @@ public class EventHandler {
 
         var time = ModConfigs.spawnVeiledTimer.get() * 20;
         if (time > 0) {
-            event.getEntity().addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEIL.get(), time));
+            event.getEntity().addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEILED.get(), time));
         }
     }
 
@@ -91,7 +90,7 @@ public class EventHandler {
             persitentData.putBoolean("FirstJoin", true);
             var time = ModConfigs.spawnVeiledTimer.get() * 20;
             if (time > 0) {
-                event.getEntity().addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEIL.get(), time));
+                event.getEntity().addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEILED.get(), time));
             }
         }
     }

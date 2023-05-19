@@ -2,9 +2,7 @@ package dev.quarris.engulfingdarkness.content;
 
 import dev.quarris.engulfingdarkness.ModRef;
 import dev.quarris.engulfingdarkness.ModRegistry;
-import dev.quarris.engulfingdarkness.capability.DarknessCapability;
 import dev.quarris.engulfingdarkness.capability.IDarkness;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -14,12 +12,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.CampfireBlock;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.lang3.tuple.Pair;
@@ -72,7 +65,7 @@ public class SoulSentinelEnchantment extends Enchantment {
                 if (player.getHealth() < damage && target.getHealth() >= 8) {
                     player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(IDarkness::resetBurnout);
                     target.hurt(ModRef.DARKNESS_DAMAGE, damage);
-                    player.addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEIL.get(), 30 * 20));
+                    player.addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEILED.get(), 30 * 20));
                     target.addEffect(new MobEffectInstance(ModRegistry.Effects.BUSTED.get(), 10 * 20));
                     level.sendParticles(ParticleTypes.REVERSE_PORTAL, target.getX(), target.getY() + 1, target.getZ(), 80, 0.2, 0.3, 0.2, 0.05);
                     event.setCanceled(true);
