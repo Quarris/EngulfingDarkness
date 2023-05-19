@@ -35,14 +35,14 @@ public class ModRegistry {
     public static class Effects {
 
         public static final DeferredRegister<MobEffect> REGISTRY = DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, ModRef.ID);
-        public static final RegistryObject<MobEffect> VEILED = REGISTRY.register("soul_veil", SoulVeilMobEffect::new);
+        public static final RegistryObject<MobEffect> SOUL_VEIL = REGISTRY.register("soul_veil", SoulVeilMobEffect::new);
         public static final RegistryObject<MobEffect> BUSTED = REGISTRY.register("busted", BustedMobEffect::new);
     }
 
     public static class Potions {
 
         public static final DeferredRegister<Potion> REGISTRY = DeferredRegister.create(ForgeRegistries.POTIONS, ModRef.ID);
-        public static final RegistryObject<Potion> VEILED = REGISTRY.register("soul_veil", () -> new Potion(new MobEffectInstance(Effects.VEILED.get(), 6000)));
+        public static final RegistryObject<Potion> SOUL_VEIL = REGISTRY.register("soul_veil", () -> new Potion(new MobEffectInstance(Effects.SOUL_VEIL.get(), 300 * 20)));
     }
 
     public static class Enchantments {

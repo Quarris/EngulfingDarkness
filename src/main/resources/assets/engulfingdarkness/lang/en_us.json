@@ -1,5 +1,8 @@
 {
     "death.attack.engulfingDarkness": "%1$s could not reach the light",
     "effect.engulfingdarkness.soul_veil": "Soul Veil",
+    "effect.engulfingdarkness.busted": "Busted",
+    "enchantment.engulfingdarkness.valiance": "Valiance",
+    "enchantment.engulfingdarkness.soul_sentinel": "Soul Sentinel",
     "item.minecraft.potion.effect.soul_veil": "Potion of Veil"
 }

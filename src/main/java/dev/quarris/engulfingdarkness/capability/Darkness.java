@@ -6,24 +6,31 @@ import dev.quarris.engulfingdarkness.ModRef;
 import dev.quarris.engulfingdarkness.ModRegistry;
 import dev.quarris.engulfingdarkness.packets.EnteredDarknessMessage;
 import dev.quarris.engulfingdarkness.packets.PacketHandler;
+import net.minecraft.client.particle.PortalParticle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.Optional;
 
 public class Darkness implements IDarkness {
 
     private float burnout;
 
     public Darkness() {
-        this.burnout = 32;
+        this.burnout = MAX_BURNOUT;
     }
 
     @Override
@@ -81,8 +88,7 @@ public class Darkness implements IDarkness {
 
             if (!player.level.isClientSide()) {
                 if (held.isDamageableItem()) {
-                    held.hurtAndBreak(1, player, p -> {
-                    });
+                    held.hurtAndBreak(1, player, p -> {});
                 } else {
                     held.shrink(1);
                 }
@@ -99,7 +105,7 @@ public class Darkness implements IDarkness {
         int valianceLevel = EnchantmentUtils.getEnchantment(player, ModRegistry.Enchantments.VALIANCE.get(), EquipmentSlot.HEAD);
         if (valianceLevel > 0) {
             darknessTimer += 2 * valianceLevel;
-            dangerTimer += 2 * valianceLevel;
+            //dangerTimer += 2 * valianceLevel;
         }
 
         if (!this.isInDarkness || (!heldLight.isEmpty() && this.burnout > 0)) {
@@ -117,7 +123,6 @@ public class Darkness implements IDarkness {
         }
 
     }
-
 
     private void spawnParticles(Player player) {
         if (!player.level.isClientSide() && this.isInDarkness && this.getHeldLight(player).isEmpty()) {
@@ -138,10 +143,13 @@ public class Darkness implements IDarkness {
     }
 
     private void dealDarknessDamage(Player player) {
-        if (this.dangerLevel == 1.0 && ModConfigs.darknessDamage.get() != 0) {
-            float perc = ModConfigs.darknessDamage.get().floatValue() / 20;
-            player.hurt(ModRef.DARKNESS_DAMAGE, player.getMaxHealth() * perc);
-        }
+        if (player.level.isClientSide()) return;
+        if (this.dangerLevel != 1.0 || ModConfigs.darknessDamage.get() == 0) return;
+
+        float percentageDamage = ModConfigs.darknessDamage.get().floatValue() / 20;
+        float damage = player.getMaxHealth() * percentageDamage;
+
+        player.hurt(ModRef.DARKNESS_DAMAGE, damage);
     }
 
     private ItemStack getHeldLight(Player player) {
@@ -199,6 +207,11 @@ public class Darkness implements IDarkness {
     }
 
     @Override
+    public void resetBurnout() {
+        this.burnout = MAX_BURNOUT;
+    }
+
+    @Override
     public void setInDarkness(boolean inDarkness) {
         this.isInDarkness = inDarkness;
     }
@@ -210,7 +223,7 @@ public class Darkness implements IDarkness {
 
     @Override
     public boolean isResistant(Player player) {
-        return player.isCreative() || player.hasEffect(ModRegistry.Effects.VEILED.get());
+        return player.isCreative() || player.hasEffect(ModRegistry.Effects.SOUL_VEIL.get());
     }
 
     @Override
@@ -225,7 +238,7 @@ public class Darkness implements IDarkness {
 
     @Override
     public void deserializeNBT(CompoundTag nbt) {
-        //this.burnout = nbt.getFloat("Burnout");
+        this.burnout = nbt.getFloat("Burnout");
         this.darknessLevel = nbt.getFloat("Darkness");
         this.dangerLevel = nbt.getFloat("Danger");
         this.isInDarkness = nbt.getBoolean("IsInDarkness");

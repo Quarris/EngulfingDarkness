@@ -20,4 +20,6 @@ public interface IDarkness extends INBTSerializable<CompoundTag> {
     boolean isInDarkness();
 
     float getDanger();
+
+    void resetBurnout();
 }
