@@ -21,5 +21,7 @@ public interface IDarkness extends INBTSerializable<CompoundTag> {
 
     float getDanger();
 
-    void resetBurnout();
+    void resetBurnout(Player player);
+
+    void syncToClient(Player player);
 }

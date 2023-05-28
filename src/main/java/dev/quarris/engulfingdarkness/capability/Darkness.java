@@ -6,11 +6,14 @@ import dev.quarris.engulfingdarkness.ModRef;
 import dev.quarris.engulfingdarkness.ModRegistry;
 import dev.quarris.engulfingdarkness.packets.EnteredDarknessMessage;
 import dev.quarris.engulfingdarkness.packets.PacketHandler;
+import dev.quarris.engulfingdarkness.packets.SyncDarknessMessage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -142,6 +145,10 @@ public class Darkness implements IDarkness {
         float percentageDamage = ModConfigs.darknessDamage.get().floatValue() / 20;
         float damage = player.getMaxHealth() * percentageDamage;
 
+        int sentinel = Math.min(EnchantmentUtils.getEnchantment(player, ModRegistry.Enchantments.SOUL_SENTINEL.get()), 4);
+
+        damage *= (1 - sentinel * 0.05);
+
         player.hurt(ModRef.DARKNESS_DAMAGE, damage);
     }
 
@@ -200,8 +207,9 @@ public class Darkness implements IDarkness {
     }
 
     @Override
-    public void resetBurnout() {
+    public void resetBurnout(Player player) {
         this.burnout = MAX_BURNOUT;
+        this.syncToClient(player);
     }
 
     @Override
@@ -216,7 +224,14 @@ public class Darkness implements IDarkness {
 
     @Override
     public boolean isResistant(Player player) {
-        return player.isCreative() || player.hasEffect(ModRegistry.Effects.SOUL_VEILED.get());
+        return player.isCreative() || player.isSpectator() || player.hasEffect(ModRegistry.Effects.SOUL_VEILED.get());
+    }
+
+    @Override
+    public void syncToClient(Player player) {
+        if (!player.level.isClientSide()) {
+            PacketHandler.sendToClient(new SyncDarknessMessage(this.serializeNBT()), player);
+        }
     }
 
     @Override

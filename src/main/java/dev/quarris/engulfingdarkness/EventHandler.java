@@ -81,9 +81,7 @@ public class EventHandler {
 
     @SubscribeEvent
     public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        event.getEntity().getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> {
-            PacketHandler.sendToClient(new SyncDarknessMessage(darkness.serializeNBT()), event.getEntity());
-        });
+
 
         CompoundTag persitentData = event.getEntity().getPersistentData();
         if (!persitentData.contains("FirstJoin")) {

@@ -1,10 +1,7 @@
 package dev.quarris.engulfingdarkness;
 
 import dev.quarris.engulfingdarkness.capability.IDarkness;
-import dev.quarris.engulfingdarkness.content.BustedMobEffect;
-import dev.quarris.engulfingdarkness.content.SoulSentinelEnchantment;
-import dev.quarris.engulfingdarkness.content.SoulVeiledMobEffect;
-import dev.quarris.engulfingdarkness.content.ValianceEnchantment;
+import dev.quarris.engulfingdarkness.content.*;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.alchemy.Potion;
@@ -37,6 +34,7 @@ public class ModRegistry {
         public static final DeferredRegister<MobEffect> REGISTRY = DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, ModRef.ID);
         public static final RegistryObject<MobEffect> SOUL_VEILED = REGISTRY.register("soul_veiled", SoulVeiledMobEffect::new);
         public static final RegistryObject<MobEffect> BUSTED = REGISTRY.register("busted", BustedMobEffect::new);
+        public static final RegistryObject<MobEffect> SENTINEL_PROTECTION = REGISTRY.register("sentinel_protection", SentinelProtectionEffect::new);
     }
 
     public static class Potions {
@@ -48,8 +46,8 @@ public class ModRegistry {
     public static class Enchantments {
 
         public static final DeferredRegister<Enchantment> REGISTRY = DeferredRegister.create(ForgeRegistries.ENCHANTMENTS, ModRef.ID);
-        public static final RegistryObject<Enchantment> VALIANCE = REGISTRY.register("valiance", ValianceEnchantment::new);
-        public static final RegistryObject<Enchantment> SOUL_SENTINEL = REGISTRY.register("soul_sentinel", SoulSentinelEnchantment::new);
+        public static final RegistryObject<ValianceEnchantment> VALIANCE = REGISTRY.register("valiance", ValianceEnchantment::new);
+        public static final RegistryObject<SoulSentinelEnchantment> SOUL_SENTINEL = REGISTRY.register("soul_sentinel", SoulSentinelEnchantment::new);
     }
 
 }
