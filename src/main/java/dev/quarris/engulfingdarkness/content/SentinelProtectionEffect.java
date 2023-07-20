@@ -2,6 +2,7 @@ package dev.quarris.engulfingdarkness.content;
 
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Collections;
@@ -16,5 +17,10 @@ public class SentinelProtectionEffect extends MobEffect {
     @Override
     public List<ItemStack> getCurativeItems() {
         return Collections.emptyList();
+    }
+
+    @Override
+    public void applyEffectTick(LivingEntity entity, int amplifier) {
+
     }
 }

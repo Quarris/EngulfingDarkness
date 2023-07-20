@@ -1,6 +1,8 @@
 package dev.quarris.engulfingdarkness.datagen;
 
 import dev.quarris.engulfingdarkness.ModRef;
+import dev.quarris.engulfingdarkness.datagen.client.EnUsLangGen;
+import dev.quarris.engulfingdarkness.datagen.server.ItemTagGen;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
@@ -24,7 +26,9 @@ public class DataGenEvents {
 
         gen.addProvider(
             event.includeServer(),
-            new ModItemTagProvider(packOutput, lookup, new ForgeBlockTagsProvider(packOutput, lookup, helper), helper)
+            new ItemTagGen(packOutput, lookup, new ForgeBlockTagsProvider(packOutput, lookup, helper), helper)
         );
+
+        gen.addProvider(event.includeClient(), new EnUsLangGen(packOutput));
     }
 }

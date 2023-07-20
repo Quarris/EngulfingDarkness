@@ -11,9 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -145,7 +143,7 @@ public class Darkness implements IDarkness {
         float percentageDamage = ModConfigs.darknessDamage.get().floatValue() / 20;
         float damage = player.getMaxHealth() * percentageDamage;
 
-        int sentinel = Math.min(EnchantmentUtils.getEnchantment(player, ModRegistry.Enchantments.SOUL_SENTINEL.get()), 4);
+        int sentinel = Math.min(EnchantmentUtils.getEnchantment(player, ModRegistry.Enchantments.SOUL_SENTINEL.get(), EquipmentSlot.CHEST), 4);
 
         damage *= (1 - sentinel * 0.05);
 
@@ -224,7 +222,7 @@ public class Darkness implements IDarkness {
 
     @Override
     public boolean isResistant(Player player) {
-        return player.isCreative() || player.isSpectator() || player.hasEffect(ModRegistry.Effects.SOUL_VEILED.get());
+        return player.isCreative() || player.isSpectator() || player.hasEffect(ModRegistry.Effects.SOUL_VEIL.get());
     }
 
     @Override

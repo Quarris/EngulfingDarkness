@@ -15,9 +15,9 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-public class SoulVeiledMobEffect extends MobEffect {
+public class SoulVeilMobEffect extends MobEffect {
 
-    public SoulVeiledMobEffect() {
+    public SoulVeilMobEffect() {
         super(MobEffectCategory.BENEFICIAL, 0xffcd61);
     }
 
@@ -31,11 +31,11 @@ public class SoulVeiledMobEffect extends MobEffect {
             BlockState state = level.getBlockState(pos);
             Player player = event.getEntity();
             if (state.is(Blocks.SOUL_LANTERN)) {
-                player.addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEILED.get(), 30 * 20));
+                player.addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEIL.get(), 30 * 20));
             }
 
             if (state.is(Blocks.SOUL_CAMPFIRE)) {
-                player.addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEILED.get(), 60 * 20));
+                player.addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEIL.get(), 60 * 20));
                 CampfireBlock.dowse(player, level, pos, state);
                 level.setBlockAndUpdate(pos, state.setValue(CampfireBlock.LIT, false));
             }
@@ -44,7 +44,7 @@ public class SoulVeiledMobEffect extends MobEffect {
         @SubscribeEvent
         public static void interactionVeil(TickEvent.PlayerTickEvent event) {
             if (event.player.getBlockStateOn().is(Blocks.SOUL_SAND)) {
-                event.player.addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEILED.get(), 5 * 20));
+                event.player.addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEIL.get(), 5 * 20));
             }
         }
     }

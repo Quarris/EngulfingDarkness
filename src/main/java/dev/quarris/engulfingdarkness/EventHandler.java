@@ -3,8 +3,6 @@ package dev.quarris.engulfingdarkness;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.quarris.engulfingdarkness.capability.Darkness;
 import dev.quarris.engulfingdarkness.capability.DarknessCapability;
-import dev.quarris.engulfingdarkness.packets.PacketHandler;
-import dev.quarris.engulfingdarkness.packets.SyncDarknessMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.nbt.CompoundTag;
@@ -68,7 +66,7 @@ public class EventHandler {
 
         var time = ModConfigs.spawnVeiledTimer.get() * 20;
         if (time > 0) {
-            event.getEntity().addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEILED.get(), time));
+            event.getEntity().addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEIL.get(), time));
         }
     }
 
@@ -88,7 +86,7 @@ public class EventHandler {
             persitentData.putBoolean("FirstJoin", true);
             var time = ModConfigs.spawnVeiledTimer.get() * 20;
             if (time > 0) {
-                event.getEntity().addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEILED.get(), time));
+                event.getEntity().addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEIL.get(), time));
             }
         }
     }

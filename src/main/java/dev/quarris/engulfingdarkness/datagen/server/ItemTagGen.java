@@ -1,4 +1,4 @@
-package dev.quarris.engulfingdarkness.datagen;
+package dev.quarris.engulfingdarkness.datagen.server;
 
 import dev.quarris.engulfingdarkness.ModRef;
 import net.minecraft.core.HolderLookup;
@@ -11,8 +11,8 @@ import net.minecraftforge.common.data.ExistingFileHelper;
 
 import java.util.concurrent.CompletableFuture;
 
-public class ModItemTagProvider extends ItemTagsProvider {
-    public ModItemTagProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, TagsProvider<Block> blockTags, ExistingFileHelper helper) {
+public class ItemTagGen extends ItemTagsProvider {
+    public ItemTagGen(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, TagsProvider<Block> blockTags, ExistingFileHelper helper) {
         super(output, lookupProvider, blockTags, ModRef.ID, helper);
     }
 
