@@ -4,26 +4,39 @@ import dev.quarris.engulfingdarkness.EnchantmentUtils;
 import dev.quarris.engulfingdarkness.ModConfigs;
 import dev.quarris.engulfingdarkness.ModRef;
 import dev.quarris.engulfingdarkness.ModRegistry;
+import dev.quarris.engulfingdarkness.content.SoulSentinelEnchantment;
 import dev.quarris.engulfingdarkness.packets.EnteredDarknessMessage;
 import dev.quarris.engulfingdarkness.packets.PacketHandler;
 import dev.quarris.engulfingdarkness.packets.SyncDarknessMessage;
+import it.unimi.dsi.fastutil.Pair;
+import it.unimi.dsi.fastutil.ints.IntComparators;
+import it.unimi.dsi.fastutil.objects.ObjectIntMutablePair;
+import it.unimi.dsi.fastutil.objects.ObjectIntPair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraftforge.common.util.INBTSerializable;
 
-public class Darkness implements IDarkness {
+import java.util.Comparator;
 
+public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
+
+    private final Player player;
     private float burnout;
+    private Pair<Player, Integer> sentinel;
 
-    public Darkness() {
+    public Darkness(Player player) {
+        this.player = player;
         this.burnout = MAX_BURNOUT;
     }
 
@@ -38,51 +51,68 @@ public class Darkness implements IDarkness {
     private float dangerLevel;
 
     @Override
-    public void tick(Player player) {
+    public void tick() {
         // Send packet to client to update whether they are in darkness
         // since clients light levels don't get fully updated
-        this.updatePlayerInDarkness(player);
+        this.updatePlayerInDarkness();
 
-        this.updateBurnout(player);
-        this.updateDarknessLevels(player);
-        this.spawnParticles(player);
-        this.playSounds(player);
-        this.dealDarknessDamage(player);
+        this.findSentinel();
+        this.updateBurnout();
+        this.updateDarknessLevels();
+        this.spawnParticles();
+        this.playSounds();
+        this.dealDarknessDamage();
     }
 
-    private void updatePlayerInDarkness(Player player) {
-        if (!player.level.isClientSide() && ModConfigs.isAllowed(player.level.dimension().location())) {
-            if (this.isResistant(player)) {
+    private void findSentinel() {
+        this.sentinel = this.player.level.players().stream()
+            .filter(p -> !this.player.getUUID().equals(p.getUUID()))
+            .filter(p -> !p.hasEffect(ModRegistry.Effects.BUSTED.get()))
+            .map(p -> new ObjectIntMutablePair<Player>(p, EnchantmentUtils.getEnchantment(p, ModRegistry.Enchantments.SOUL_SENTINEL.get(), EquipmentSlot.CHEST)))
+            .filter(p -> p.rightInt() > 0)
+            .filter(p -> this.player.distanceTo(p.left()) <= SoulSentinelEnchantment.getDistance(p.rightInt()))
+            .sorted(Comparator.<ObjectIntPair<Player>>comparingInt(ObjectIntPair::rightInt).thenComparing(p -> this.player.distanceTo(p.left())))
+            .findFirst().orElse(null);
+
+        if (this.sentinel != null) {
+            this.player.addEffect(new MobEffectInstance(new MobEffectInstance(ModRegistry.Effects.SENTINEL_PROTECTION.get(), 5, this.sentinel.right() - 1, true, true)));
+        }
+    }
+
+    private void updatePlayerInDarkness() {
+        if (!this.player.level.isClientSide() && ModConfigs.isAllowed(this.player.level.dimension().location())) {
+            if (this.isResistant()) {
                 this.setInDarkness(false);
-                PacketHandler.sendToClient(new EnteredDarknessMessage(false), player);
+                PacketHandler.sendToClient(new EnteredDarknessMessage(false), this.player);
             } else {
-                int light = player.level.getMaxLocalRawBrightness(new BlockPos(player.getEyePosition(1)));
-                if (this.isInDarkness && (this.isResistant(player) || light > ModConfigs.darknessLightLevel.get())) {
+                int light = player.level.getMaxLocalRawBrightness(new BlockPos(this.player.getEyePosition(1)));
+                if (this.isInDarkness && (this.isResistant() || light > ModConfigs.darknessLightLevel.get())) {
                     this.setInDarkness(false);
-                    PacketHandler.sendToClient(new EnteredDarknessMessage(false), player);
-                } else if (!player.isCreative() && !this.isInDarkness && light <= ModConfigs.darknessLightLevel.get()) {
+                    PacketHandler.sendToClient(new EnteredDarknessMessage(false), this.player);
+                } else if (!this.player.isCreative() && !this.isInDarkness && light <= ModConfigs.darknessLightLevel.get()) {
                     this.setInDarkness(true);
-                    PacketHandler.sendToClient(new EnteredDarknessMessage(true), player);
+                    PacketHandler.sendToClient(new EnteredDarknessMessage(true), this.player);
                 }
             }
         }
     }
 
-    private void updateBurnout(Player player) {
+    private void updateBurnout() {
         if (!this.isInDarkness) return;
-        ItemStack held = this.getHeldLight(player);
+        ItemStack held = this.getHeldLight();
         if (held.isEmpty()) return;
 
-        float consumedBurnout = this.calculateConsumedBurnout(player.level, player, held) / 20f;
+        float consumedBurnout = this.calculateConsumedBurnout(this.player.level, held) / 20f;
 
         this.burnout = Math.max(this.burnout - consumedBurnout, 0);
 
         if (this.burnout <= 0) {
             this.burnout = MAX_BURNOUT;
 
-            if (!player.level.isClientSide()) {
+            if (!this.player.level.isClientSide()) {
                 if (held.isDamageableItem()) {
-                    held.hurtAndBreak(1, player, p -> {});
+                    held.hurtAndBreak(1, this.player, p -> {
+                    });
                 } else {
                     held.shrink(1);
                 }
@@ -90,13 +120,13 @@ public class Darkness implements IDarkness {
         }
     }
 
-    private void updateDarknessLevels(Player player) {
+    private void updateDarknessLevels() {
         // If not in darkness, reset the levels.
-        ItemStack heldLight = this.getHeldLight(player);
+        ItemStack heldLight = this.getHeldLight();
 
         double darknessTimer = ModConfigs.darknessTimer.get();
         double dangerTimer = ModConfigs.dangerTimer.get();
-        int valianceLevel = EnchantmentUtils.getEnchantment(player, ModRegistry.Enchantments.VALIANCE.get(), EquipmentSlot.HEAD);
+        int valianceLevel = EnchantmentUtils.getEnchantment(this.player, ModRegistry.Enchantments.VALIANCE.get(), EquipmentSlot.HEAD);
         if (valianceLevel > 0) {
             darknessTimer += 2 * valianceLevel;
             //dangerTimer += 2 * valianceLevel;
@@ -118,46 +148,60 @@ public class Darkness implements IDarkness {
 
     }
 
-    private void spawnParticles(Player player) {
-        if (!player.level.isClientSide() && this.isInDarkness && this.getHeldLight(player).isEmpty()) {
+    private void spawnParticles() {
+        if (!this.player.level.isClientSide() && this.isInDarkness && this.getHeldLight().isEmpty()) {
             double rx = (-1 + Math.random() * 2) * 0.3;
             double ry = Math.random();
             double rz = (-1 + Math.random() * 2) * 0.3;
-            double mx = player.getRandom().nextGaussian() * 0.2;
-            double my = player.getRandom().nextGaussian() * 0.2;
-            double mz = player.getRandom().nextGaussian() * 0.2;
-            ((ServerLevel) player.level).sendParticles(ParticleTypes.SMOKE, player.getX() + rx, player.getY() + ry, player.getZ() + rz, (int) (this.darknessLevel * 10), mx, my, mz, 0.01);
+            double mx = this.player.getRandom().nextGaussian() * 0.2;
+            double my = this.player.getRandom().nextGaussian() * 0.2;
+            double mz = this.player.getRandom().nextGaussian() * 0.2;
+            ((ServerLevel) this.player.level).sendParticles(ParticleTypes.SMOKE, this.player.getX() + rx, this.player.getY() + ry, this.player.getZ() + rz, (int) (this.darknessLevel * 10), mx, my, mz, 0.01);
         }
     }
 
-    private void playSounds(Player player) {
-        if (player.level.isClientSide() && this.darknessLevel == 1.0 && player.getRandom().nextDouble() > 0.95) {
-            player.playSound(SoundEvents.AMBIENT_CRIMSON_FOREST_MOOD.value(), 1, 0.1f);
+    private void playSounds() {
+        if (this.player.level.isClientSide() && this.darknessLevel == 1.0 && this.player.getRandom().nextDouble() > 0.95) {
+            this.player.playSound(SoundEvents.AMBIENT_CRIMSON_FOREST_MOOD.value(), 1, 0.1f);
         }
     }
 
-    private void dealDarknessDamage(Player player) {
-        if (player.level.isClientSide()) return;
+    private void dealDarknessDamage() {
+        if (this.player.level.isClientSide()) return;
         if (this.dangerLevel != 1.0 || ModConfigs.darknessDamage.get() == 0) return;
 
         float percentageDamage = ModConfigs.darknessDamage.get().floatValue() / 20;
-        float damage = player.getMaxHealth() * percentageDamage;
+        float damage = this.player.getMaxHealth() * percentageDamage;
 
-        int sentinel = Math.min(EnchantmentUtils.getEnchantment(player, ModRegistry.Enchantments.SOUL_SENTINEL.get(), EquipmentSlot.CHEST), 4);
+        int sentinel = Math.min(EnchantmentUtils.getEnchantment(this.player, ModRegistry.Enchantments.SOUL_SENTINEL.get(), EquipmentSlot.CHEST), 4);
 
         damage *= (1 - sentinel * 0.05);
 
-        player.hurt(ModRef.DARKNESS_DAMAGE, damage);
+        if (this.sentinel != null) {
+            ServerPlayer target = (ServerPlayer) this.sentinel.left();
+            damage *= (1 - this.sentinel.right() * 0.075);
+            float interceptedDamage = target.getMaxHealth() * 0.25f;
+            if (this.player.getHealth() < damage && target.getHealth() > interceptedDamage) {
+                this.player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(IDarkness::resetBurnout);
+                target.hurt(ModRef.DARKNESS_DAMAGE_SENTINEL, interceptedDamage);
+                this.player.addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEIL.get(), 30 * 20));
+                target.addEffect(new MobEffectInstance(ModRegistry.Effects.BUSTED.get(), 60 * 20));
+                target.getLevel().sendParticles(ParticleTypes.REVERSE_PORTAL, target.getX(), target.getY() + 1, target.getZ(), 80, 0.2, 0.3, 0.2, 0.05);
+                damage = 0;
+            }
+        }
+
+        this.player.hurt(ModRef.DARKNESS_DAMAGE, damage);
     }
 
-    private ItemStack getHeldLight(Player player) {
+    private ItemStack getHeldLight() {
 
-        ItemStack held = player.getMainHandItem();
+        ItemStack held = this.player.getMainHandItem();
         if (held.is(ModRef.Tags.LIGHT) || held.is(ModRef.Tags.SOUL_LIGHT)) {
             return held;
         }
 
-        held = player.getOffhandItem();
+        held = this.player.getOffhandItem();
         if (held.is(ModRef.Tags.LIGHT) || held.is(ModRef.Tags.SOUL_LIGHT)) {
             return held;
         }
@@ -165,12 +209,12 @@ public class Darkness implements IDarkness {
         return ItemStack.EMPTY;
     }
 
-    private float calculateConsumedBurnout(Level level, Player player, ItemStack light) {
+    private float calculateConsumedBurnout(Level level, ItemStack light) {
         int consumed = 2;
-        if (isPlayerInRain(level, player)) {
+        if (isPlayerInRain(level, this.player)) {
             consumed = 4;
         }
-        if (player.isUnderWater()) {
+        if (this.player.isUnderWater()) {
             consumed = 16;
         }
 
@@ -205,9 +249,9 @@ public class Darkness implements IDarkness {
     }
 
     @Override
-    public void resetBurnout(Player player) {
+    public void resetBurnout() {
         this.burnout = MAX_BURNOUT;
-        this.syncToClient(player);
+        this.syncToClient();
     }
 
     @Override
@@ -221,14 +265,14 @@ public class Darkness implements IDarkness {
     }
 
     @Override
-    public boolean isResistant(Player player) {
-        return player.isCreative() || player.isSpectator() || player.hasEffect(ModRegistry.Effects.SOUL_VEIL.get());
+    public boolean isResistant() {
+        return this.player.isCreative() || this.player.isSpectator() || this.player.hasEffect(ModRegistry.Effects.SOUL_VEIL.get());
     }
 
     @Override
-    public void syncToClient(Player player) {
-        if (!player.level.isClientSide()) {
-            PacketHandler.sendToClient(new SyncDarknessMessage(this.serializeNBT()), player);
+    public void syncToClient() {
+        if (!this.player.level.isClientSide()) {
+            PacketHandler.sendToClient(new SyncDarknessMessage(this.serializeNBT()), this.player);
         }
     }
 

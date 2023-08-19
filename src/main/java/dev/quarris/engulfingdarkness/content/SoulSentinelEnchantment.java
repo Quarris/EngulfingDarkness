@@ -3,6 +3,7 @@ package dev.quarris.engulfingdarkness.content;
 import dev.quarris.engulfingdarkness.EnchantmentUtils;
 import dev.quarris.engulfingdarkness.ModRef;
 import dev.quarris.engulfingdarkness.ModRegistry;
+import dev.quarris.engulfingdarkness.capability.IDarkness;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -36,7 +37,7 @@ public class SoulSentinelEnchantment extends Enchantment {
         return true;
     }
 
-    public int getDistance(int level) {
+    public static int getDistance(int level) {
         if (level > 4) level = 4;
 
         return 15 * level;
@@ -47,7 +48,7 @@ public class SoulSentinelEnchantment extends Enchantment {
 
         // TODO Replace these 2 events into the Darkness Capability
         // Store the current player UUID that is protecting the user for quick access on damage control and applying the visual potion effect
-        @SubscribeEvent
+        //@SubscribeEvent
         public static void applyProtectionEffectToNearbyPlayers(TickEvent.PlayerTickEvent event) {
             if (!(event.player instanceof ServerPlayer player)) {
                 return;
@@ -61,14 +62,14 @@ public class SoulSentinelEnchantment extends Enchantment {
 
             if (sentinelLevel <= 0) return;
 
-            int distance = ModRegistry.Enchantments.SOUL_SENTINEL.get().getDistance(sentinelLevel);
+            int distance = SoulSentinelEnchantment.getDistance(sentinelLevel);
             var nearby = player.level.getNearbyPlayers(TargetingConditions.forNonCombat().selector(p -> p.distanceToSqr(player) <= distance * distance), player, player.getBoundingBox().inflate(distance));
             nearby.forEach(target -> {
                 target.addEffect(new MobEffectInstance(ModRegistry.Effects.SENTINEL_PROTECTION.get(), 5, sentinelLevel - 1, true, true));
             });
         }
 
-        @SubscribeEvent
+        //@SubscribeEvent
         public static void damageControl(LivingDamageEvent event) {
             if (!(event.getEntity() instanceof ServerPlayer player) || event.getSource() != ModRef.DARKNESS_DAMAGE) {
                 return;
@@ -92,7 +93,7 @@ public class SoulSentinelEnchantment extends Enchantment {
                 .filter(pair -> {
                     Player target = pair.getLeft();
                     int enchantmentLevel = pair.getRight();
-                    int minDistance = ModRegistry.Enchantments.SOUL_SENTINEL.get().getDistance(enchantmentLevel);
+                    int minDistance = getDistance(enchantmentLevel);
                     return target.distanceToSqr(player) <= minDistance * minDistance;
                 }).findFirst();
 
@@ -101,9 +102,7 @@ public class SoulSentinelEnchantment extends Enchantment {
                 damage *= (1 - nearestTarget.get().getRight() * 0.075);
                 float interceptedDamage = target.getMaxHealth() * 0.25f;
                 if (player.getHealth() < damage && target.getHealth() > interceptedDamage) {
-                    player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(cap -> {
-                        cap.resetBurnout(player);
-                    });
+                    player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(IDarkness::resetBurnout);
                     target.hurt(ModRef.DARKNESS_DAMAGE_SENTINEL, interceptedDamage);
                     player.addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEIL.get(), 30 * 20));
                     target.addEffect(new MobEffectInstance(ModRegistry.Effects.BUSTED.get(), 60 * 20));

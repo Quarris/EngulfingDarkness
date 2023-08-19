@@ -2,7 +2,8 @@ package dev.quarris.engulfingdarkness;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.quarris.engulfingdarkness.capability.Darkness;
-import dev.quarris.engulfingdarkness.capability.DarknessCapability;
+import dev.quarris.engulfingdarkness.capability.DarknessProvider;
+import dev.quarris.engulfingdarkness.capability.IDarkness;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.nbt.CompoundTag;
@@ -24,8 +25,8 @@ public class EventHandler {
 
     @SubscribeEvent
     public static void attachCaps(AttachCapabilitiesEvent<Entity> event) {
-        if (event.getObject() instanceof Player) {
-            event.addCapability(DarknessCapability.KEY, new DarknessCapability(new Darkness()));
+        if (event.getObject() instanceof Player player) {
+            event.addCapability(DarknessProvider.KEY, new DarknessProvider(player));
         }
     }
 
@@ -73,7 +74,7 @@ public class EventHandler {
     @SubscribeEvent
     public static void playerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
-            event.player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> darkness.tick(event.player));
+            event.player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(IDarkness::tick);
         }
     }
 
