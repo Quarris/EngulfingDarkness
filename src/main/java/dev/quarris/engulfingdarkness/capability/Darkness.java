@@ -175,18 +175,18 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
         int sentinel = Math.min(EnchantmentUtils.getEnchantment(this.player, ModRegistry.Enchantments.SOUL_SENTINEL.get(), EquipmentSlot.CHEST), 4);
 
-        damage *= (1 - sentinel * 0.05);
+        damage *= (float) (1 - sentinel * 0.05);
 
         if (this.sentinel != null) {
-            ServerPlayer target = (ServerPlayer) this.sentinel.left();
-            damage *= (1 - this.sentinel.right() * 0.075);
-            float interceptedDamage = target.getMaxHealth() * 0.25f;
-            if (this.player.getHealth() < damage && target.getHealth() > interceptedDamage) {
+            ServerPlayer sentinelPlayer = (ServerPlayer) this.sentinel.left();
+            damage *= (float) (1 - this.sentinel.right() * 0.075);
+            float interceptedDamage = sentinelPlayer.getMaxHealth() * 0.25f;
+            if (this.player.getHealth() < damage && sentinelPlayer.getHealth() > interceptedDamage) {
                 this.player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(IDarkness::resetBurnout);
-                target.hurt(ModRef.DARKNESS_DAMAGE_SENTINEL, interceptedDamage);
+                sentinelPlayer.hurt(ModRef.DARKNESS_DAMAGE_SENTINEL, interceptedDamage);
                 this.player.addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEIL.get(), 30 * 20));
-                target.addEffect(new MobEffectInstance(ModRegistry.Effects.BUSTED.get(), 60 * 20));
-                target.getLevel().sendParticles(ParticleTypes.REVERSE_PORTAL, target.getX(), target.getY() + 1, target.getZ(), 80, 0.2, 0.3, 0.2, 0.05);
+                sentinelPlayer.addEffect(new MobEffectInstance(ModRegistry.Effects.BUSTED.get(), 60 * 20));
+                sentinelPlayer.getLevel().sendParticles(ParticleTypes.REVERSE_PORTAL, sentinelPlayer.getX(), sentinelPlayer.getY() + 1, sentinelPlayer.getZ(), 80, 0.2, 0.3, 0.2, 0.05);
                 damage = 0;
             }
         }
