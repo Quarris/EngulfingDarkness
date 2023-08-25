@@ -1,9 +1,7 @@
 package dev.quarris.engulfingdarkness.client.eventhandlers;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import dev.quarris.engulfingdarkness.ModRef;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ViewportEvent;
@@ -17,13 +15,10 @@ public class ClientEventHandler {
     public static void renderFog(ViewportEvent.RenderFog event) {
         Minecraft.getInstance().player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> {
             if (darkness.getDarkness() > 0.01) {
-                float startFog = event.getMode() == FogRenderer.FogMode.FOG_SKY ?
-                    0 :
-                    event.getFarPlaneDistance() * 0.75f * (1 - darkness.getDarkness());
-
-                float endFog = 10 + event.getFarPlaneDistance() * (1 - darkness.getDarkness());
-                RenderSystem.setShaderFogStart(startFog);
-                RenderSystem.setShaderFogEnd(endFog);
+                float scale = (float) Mth.clamp((1-darkness.getDarkness()), 0.01, 1);
+                event.scaleNearPlaneDistance(scale);
+                event.scaleFarPlaneDistance(scale + 0.05f);
+                event.setCanceled(true);
             }
         });
     }
