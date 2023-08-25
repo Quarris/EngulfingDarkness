@@ -1,6 +1,6 @@
-package dev.quarris.engulfingdarkness.content;
+package dev.quarris.engulfingdarkness.effect;
 
-import dev.quarris.engulfingdarkness.ModRegistry;
+import dev.quarris.engulfingdarkness.registry.EffectSetup;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.item.ItemStack;
@@ -27,7 +27,7 @@ public class BustedMobEffect extends MobEffect {
 
         @SubscribeEvent
         public static void bustedHealing(LivingHealEvent event) {
-            if (event.getEntity().hasEffect(ModRegistry.Effects.BUSTED.get())) {
+            if (event.getEntity().hasEffect(EffectSetup.BUSTED.get())) {
                 event.setCanceled(true);
             }
         }

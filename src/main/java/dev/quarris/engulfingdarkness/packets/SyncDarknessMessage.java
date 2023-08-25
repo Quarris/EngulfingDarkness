@@ -5,7 +5,6 @@ import dev.quarris.engulfingdarkness.capability.Darkness;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;

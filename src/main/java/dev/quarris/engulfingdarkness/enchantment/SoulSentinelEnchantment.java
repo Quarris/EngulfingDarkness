@@ -1,9 +1,10 @@
-package dev.quarris.engulfingdarkness.content;
+package dev.quarris.engulfingdarkness.enchantment;
 
 import dev.quarris.engulfingdarkness.EnchantmentUtils;
 import dev.quarris.engulfingdarkness.ModRef;
-import dev.quarris.engulfingdarkness.ModRegistry;
 import dev.quarris.engulfingdarkness.capability.IDarkness;
+import dev.quarris.engulfingdarkness.registry.EffectSetup;
+import dev.quarris.engulfingdarkness.registry.EnchantmentSetup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,7 +17,6 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -54,18 +54,18 @@ public class SoulSentinelEnchantment extends Enchantment {
                 return;
             }
 
-            if (player.hasEffect(ModRegistry.Effects.BUSTED.get())) {
+            if (player.hasEffect(EffectSetup.BUSTED.get())) {
                 return;
             }
 
-            int sentinelLevel = Math.min(4, EnchantmentUtils.getEnchantment(player, ModRegistry.Enchantments.SOUL_SENTINEL.get(), EquipmentSlot.CHEST));
+            int sentinelLevel = Math.min(4, EnchantmentUtils.getEnchantment(player, EnchantmentSetup.SOUL_SENTINEL.get(), EquipmentSlot.CHEST));
 
             if (sentinelLevel <= 0) return;
 
             int distance = SoulSentinelEnchantment.getDistance(sentinelLevel);
             var nearby = player.level.getNearbyPlayers(TargetingConditions.forNonCombat().selector(p -> p.distanceToSqr(player) <= distance * distance), player, player.getBoundingBox().inflate(distance));
             nearby.forEach(target -> {
-                target.addEffect(new MobEffectInstance(ModRegistry.Effects.SENTINEL_PROTECTION.get(), 5, sentinelLevel - 1, true, true));
+                target.addEffect(new MobEffectInstance(EffectSetup.SENTINEL_PROTECTION.get(), 5, sentinelLevel - 1, true, true));
             });
         }
 
@@ -75,7 +75,7 @@ public class SoulSentinelEnchantment extends Enchantment {
                 return;
             }
 
-            if (player.hasEffect(ModRegistry.Effects.BUSTED.get())) {
+            if (player.hasEffect(EffectSetup.BUSTED.get())) {
                 return;
             }
 
@@ -83,10 +83,10 @@ public class SoulSentinelEnchantment extends Enchantment {
             ServerLevel level = (ServerLevel) player.level;
             Optional<Pair<ServerPlayer, Integer>> nearestTarget = level.players().stream()
                 .filter(target -> !target.getUUID().equals(player.getUUID()))
-                .filter(target -> !target.hasEffect(ModRegistry.Effects.BUSTED.get()))
+                .filter(target -> !target.hasEffect(EffectSetup.BUSTED.get()))
                 .sorted((p1, p2) -> Mth.sign(p1.distanceToSqr(player) - p2.distanceToSqr(player)))
                 .map(p -> {
-                    int soulSentinelLevel = Math.min(EnchantmentUtils.getEnchantment(p, ModRegistry.Enchantments.SOUL_SENTINEL.get(), EquipmentSlot.CHEST), 4);
+                    int soulSentinelLevel = Math.min(EnchantmentUtils.getEnchantment(p, EnchantmentSetup.SOUL_SENTINEL.get(), EquipmentSlot.CHEST), 4);
                     return Pair.of(p, soulSentinelLevel);
                 })
                 .filter(pair -> pair.getRight() > 0)
@@ -104,8 +104,8 @@ public class SoulSentinelEnchantment extends Enchantment {
                 if (player.getHealth() < damage && target.getHealth() > interceptedDamage) {
                     player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(IDarkness::resetBurnout);
                     target.hurt(ModRef.DARKNESS_DAMAGE_SENTINEL, interceptedDamage);
-                    player.addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEIL.get(), 30 * 20));
-                    target.addEffect(new MobEffectInstance(ModRegistry.Effects.BUSTED.get(), 60 * 20));
+                    player.addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), 30 * 20));
+                    target.addEffect(new MobEffectInstance(EffectSetup.BUSTED.get(), 60 * 20));
                     level.sendParticles(ParticleTypes.REVERSE_PORTAL, target.getX(), target.getY() + 1, target.getZ(), 80, 0.2, 0.3, 0.2, 0.05);
                     event.setCanceled(true);
                     return;

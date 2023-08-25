@@ -1,4 +1,4 @@
-package dev.quarris.engulfingdarkness.content;
+package dev.quarris.engulfingdarkness.enchantment;
 
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.enchantment.Enchantment;

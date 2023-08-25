@@ -3,13 +3,13 @@ package dev.quarris.engulfingdarkness.capability;
 import dev.quarris.engulfingdarkness.EnchantmentUtils;
 import dev.quarris.engulfingdarkness.ModConfigs;
 import dev.quarris.engulfingdarkness.ModRef;
-import dev.quarris.engulfingdarkness.ModRegistry;
-import dev.quarris.engulfingdarkness.content.SoulSentinelEnchantment;
+import dev.quarris.engulfingdarkness.enchantment.SoulSentinelEnchantment;
 import dev.quarris.engulfingdarkness.packets.EnteredDarknessMessage;
 import dev.quarris.engulfingdarkness.packets.PacketHandler;
 import dev.quarris.engulfingdarkness.packets.SyncDarknessMessage;
+import dev.quarris.engulfingdarkness.registry.EffectSetup;
+import dev.quarris.engulfingdarkness.registry.EnchantmentSetup;
 import it.unimi.dsi.fastutil.Pair;
-import it.unimi.dsi.fastutil.ints.IntComparators;
 import it.unimi.dsi.fastutil.objects.ObjectIntMutablePair;
 import it.unimi.dsi.fastutil.objects.ObjectIntPair;
 import net.minecraft.core.BlockPos;
@@ -67,15 +67,15 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     private void findSentinel() {
         this.sentinel = this.player.level.players().stream()
             .filter(p -> !this.player.getUUID().equals(p.getUUID()))
-            .filter(p -> !p.hasEffect(ModRegistry.Effects.BUSTED.get()))
-            .map(p -> new ObjectIntMutablePair<Player>(p, EnchantmentUtils.getEnchantment(p, ModRegistry.Enchantments.SOUL_SENTINEL.get(), EquipmentSlot.CHEST)))
+            .filter(p -> !p.hasEffect(EffectSetup.BUSTED.get()))
+            .map(p -> new ObjectIntMutablePair<Player>(p, EnchantmentUtils.getEnchantment(p, EnchantmentSetup.SOUL_SENTINEL.get(), EquipmentSlot.CHEST)))
             .filter(p -> p.rightInt() > 0)
             .filter(p -> this.player.distanceTo(p.left()) <= SoulSentinelEnchantment.getDistance(p.rightInt()))
             .sorted(Comparator.<ObjectIntPair<Player>>comparingInt(ObjectIntPair::rightInt).thenComparing(p -> this.player.distanceTo(p.left())))
             .findFirst().orElse(null);
 
         if (this.sentinel != null) {
-            this.player.addEffect(new MobEffectInstance(new MobEffectInstance(ModRegistry.Effects.SENTINEL_PROTECTION.get(), 5, this.sentinel.right() - 1, true, true)));
+            this.player.addEffect(new MobEffectInstance(new MobEffectInstance(EffectSetup.SENTINEL_PROTECTION.get(), 5, this.sentinel.right() - 1, true, true)));
         }
     }
 
@@ -126,7 +126,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
         double darknessTimer = ModConfigs.darknessTimer.get();
         double dangerTimer = ModConfigs.dangerTimer.get();
-        int valianceLevel = EnchantmentUtils.getEnchantment(this.player, ModRegistry.Enchantments.VALIANCE.get(), EquipmentSlot.HEAD);
+        int valianceLevel = EnchantmentUtils.getEnchantment(this.player, EnchantmentSetup.VALIANCE.get(), EquipmentSlot.HEAD);
         if (valianceLevel > 0) {
             darknessTimer += 2 * valianceLevel;
             //dangerTimer += 2 * valianceLevel;
@@ -173,7 +173,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         float percentageDamage = ModConfigs.darknessDamage.get().floatValue() / 20;
         float damage = this.player.getMaxHealth() * percentageDamage;
 
-        int sentinel = Math.min(EnchantmentUtils.getEnchantment(this.player, ModRegistry.Enchantments.SOUL_SENTINEL.get(), EquipmentSlot.CHEST), 4);
+        int sentinel = Math.min(EnchantmentUtils.getEnchantment(this.player, EnchantmentSetup.SOUL_SENTINEL.get(), EquipmentSlot.CHEST), 4);
 
         damage *= (float) (1 - sentinel * 0.05);
 
@@ -184,8 +184,8 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
             if (this.player.getHealth() < damage && sentinelPlayer.getHealth() > interceptedDamage) {
                 this.player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(IDarkness::resetBurnout);
                 sentinelPlayer.hurt(ModRef.DARKNESS_DAMAGE_SENTINEL, interceptedDamage);
-                this.player.addEffect(new MobEffectInstance(ModRegistry.Effects.SOUL_VEIL.get(), 30 * 20));
-                sentinelPlayer.addEffect(new MobEffectInstance(ModRegistry.Effects.BUSTED.get(), 60 * 20));
+                this.player.addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), 30 * 20));
+                sentinelPlayer.addEffect(new MobEffectInstance(EffectSetup.BUSTED.get(), 60 * 20));
                 sentinelPlayer.getLevel().sendParticles(ParticleTypes.REVERSE_PORTAL, sentinelPlayer.getX(), sentinelPlayer.getY() + 1, sentinelPlayer.getZ(), 80, 0.2, 0.3, 0.2, 0.05);
                 damage = 0;
             }
@@ -266,7 +266,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     @Override
     public boolean isResistant() {
-        return this.player.isCreative() || this.player.isSpectator() || this.player.hasEffect(ModRegistry.Effects.SOUL_VEIL.get());
+        return this.player.isCreative() || this.player.isSpectator() || this.player.hasEffect(EffectSetup.SOUL_VEIL.get());
     }
 
     @Override
