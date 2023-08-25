@@ -21,6 +21,10 @@ public class ModConfigs {
 
     public static ForgeConfigSpec.IntValue spawnVeiledTimer;
 
+    public static ForgeConfigSpec.BooleanValue debugMode;
+
+
+
 
     public static ForgeConfigSpec.Builder init(ForgeConfigSpec.Builder builder) {
         darknessLightLevel = builder.comment(
@@ -50,6 +54,10 @@ public class ModConfigs {
         dangerLevelIncrement = builder.comment(
                 "DEPRECATED (use danger_timer)] Once in full darkness, how fast until the damage starts to trigger."
         ).defineInRange("danger_increment", 0.03, 0.001, 1.0);
+
+        debugMode = builder.comment(
+            "Debug mode displays or give info about the state of darkness at any given time."
+        ).define("debug_mode", false);
         return builder;
     }
 

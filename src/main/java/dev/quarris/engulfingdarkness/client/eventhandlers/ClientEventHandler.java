@@ -1,10 +1,13 @@
 package dev.quarris.engulfingdarkness.client.eventhandlers;
 
 import dev.quarris.engulfingdarkness.ModRef;
+import dev.quarris.engulfingdarkness.client.HudRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.ViewportEvent;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -33,6 +36,16 @@ public class ClientEventHandler {
                 event.setBlue(Mth.lerp(perc, 0, event.getBlue()));
             }
         });
+    }
+
+    @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = ModRef.ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+    public static class ClientModEventHandler {
+
+        @SubscribeEvent
+        public static void renderBurnout(RegisterGuiOverlaysEvent event) {
+            event.registerAbove(VanillaGuiOverlay.EXPERIENCE_BAR.id(), "burnout", HudRenderer::renderBurnoutHud);
+        }
+
     }
 
 }

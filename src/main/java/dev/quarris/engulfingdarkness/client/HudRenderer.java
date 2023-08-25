@@ -3,6 +3,7 @@ package dev.quarris.engulfingdarkness.client;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.quarris.engulfingdarkness.ModConfigs;
 import dev.quarris.engulfingdarkness.ModRef;
 import dev.quarris.engulfingdarkness.capability.IDarkness;
 import net.minecraft.client.Minecraft;
@@ -17,17 +18,13 @@ import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT, modid = ModRef.ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class HudRenderer {
 
     private static final ResourceLocation HUD_TEXTURE = ModRef.res("textures/gui/hud.png");
 
-    @SubscribeEvent
-    public static void renderBurnout(RegisterGuiOverlaysEvent event) {
-        event.registerAbove(VanillaGuiOverlay.EXPERIENCE_BAR.id(), "burnout", HudRenderer::renderBurnoutHud);
-    }
-
     public static void renderBurnoutHud(ForgeGui gui, PoseStack poseStack, float partialTick, int screenWidth, int screenHeight) {
+        if (!ModConfigs.debugMode.get()) return;
+
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
 
