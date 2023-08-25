@@ -40,19 +40,25 @@ public class HudRenderer {
             final int barHeight = 5;
             int barX = (window.getGuiScaledWidth() - barWidth) / 2;
             int barY = 5;
+
+            // Burnout
             float renderWidth = barWidth * (darkness.getBurnout() / IDarkness.MAX_BURNOUT);
             GuiComponent.blit(poseStack, barX, barY, 0, 0, 0, barWidth, barHeight, 256, 256);
             GuiComponent.blit(poseStack, barX, barY, 0, 0, 5, (int) renderWidth, barHeight, 256, 256);
 
-            barY = 15;
-            renderWidth = barWidth * (1 - darkness.getDarkness());
-            GuiComponent.blit(poseStack, barX, barY, 0, 0, 0, barWidth, barHeight, 256, 256);
-            GuiComponent.blit(poseStack, barX, barY, 0, 0, 5, (int) renderWidth, barHeight, 256, 256);
+            if (ModConfigs.debugMode.get()) {
+                // Darkness
+                barY = 15;
+                renderWidth = barWidth * (1 - darkness.getDarkness());
+                GuiComponent.blit(poseStack, barX, barY, 0, 0, 0, barWidth, barHeight, 256, 256);
+                GuiComponent.blit(poseStack, barX, barY, 0, 0, 5, (int) renderWidth, barHeight, 256, 256);
 
-            barY = 25;
-            renderWidth = barWidth * (1 - darkness.getDanger());
-            GuiComponent.blit(poseStack, barX, barY, 0, 0, 0, barWidth, barHeight, 256, 256);
-            GuiComponent.blit(poseStack, barX, barY, 0, 0, 5, (int) renderWidth, barHeight, 256, 256);
+                // Danger
+                barY = 25;
+                renderWidth = barWidth * (1 - darkness.getDanger());
+                GuiComponent.blit(poseStack, barX, barY, 0, 0, 0, barWidth, barHeight, 256, 256);
+                GuiComponent.blit(poseStack, barX, barY, 0, 0, 5, (int) renderWidth, barHeight, 256, 256);
+            }
         });
     }
 }
