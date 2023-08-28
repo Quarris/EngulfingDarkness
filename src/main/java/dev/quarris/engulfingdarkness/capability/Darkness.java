@@ -17,10 +17,13 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
@@ -28,6 +31,8 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
@@ -112,10 +117,13 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
             if (!this.player.level.isClientSide()) {
                 if (held.isDamageableItem()) {
                     held.hurtAndBreak(1, this.player, p -> {
+                        p.level.playSound(null, p.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1, 1);
                     });
                 } else {
                     held.shrink(1);
+                    this.player.level.playSound(null, this.player.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1, 1);
                 }
+                this.syncToClient();
             }
         }
     }
@@ -124,28 +132,26 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         // If not in darkness, reset the levels.
         ItemStack heldLight = this.getHeldLight();
 
-        double darknessTimer = ModConfigs.darknessTimer.get();
+        double engulfTime = ModConfigs.darknessTimer.get();
         double dangerTimer = ModConfigs.dangerTimer.get();
         int valianceLevel = EnchantmentUtils.getEnchantment(this.player, EnchantmentSetup.VALIANCE.get(), EquipmentSlot.HEAD);
         if (valianceLevel > 0) {
-            darknessTimer += 2 * valianceLevel;
-            //dangerTimer += 2 * valianceLevel;
+            engulfTime += 2 * valianceLevel;
         }
 
         if (!this.isInDarkness || (!heldLight.isEmpty() && this.burnout > 0)) {
-            this.darknessLevel = (float) Math.max(this.darknessLevel - 3 / (darknessTimer * 20), 0);
+            this.darknessLevel = (float) Math.max(this.darknessLevel - 1 / (engulfTime * 20), 0);
             this.dangerLevel = 0;
             return;
         }
 
         // Update the darkness and danger levels when in darkness
         if (heldLight.isEmpty() || this.burnout <= 0) {
-            this.darknessLevel = (float) Math.min(this.darknessLevel + 1 / (darknessTimer * 20), 1);
+            this.darknessLevel = (float) Math.min(this.darknessLevel + 1 / (engulfTime * 20), 1);
             if (this.darknessLevel == 1.0) {
                 this.dangerLevel = (float) Math.min(this.dangerLevel + 1 / (dangerTimer * 20), 1);
             }
         }
-
     }
 
     private void spawnParticles() {
@@ -187,10 +193,11 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
                 this.player.addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), 30 * 20));
                 sentinelPlayer.addEffect(new MobEffectInstance(EffectSetup.BUSTED.get(), 60 * 20));
                 sentinelPlayer.getLevel().sendParticles(ParticleTypes.REVERSE_PORTAL, sentinelPlayer.getX(), sentinelPlayer.getY() + 1, sentinelPlayer.getZ(), 80, 0.2, 0.3, 0.2, 0.05);
-                damage = 0;
+                return;
             }
         }
 
+        this.player.addEffect(new MobEffectInstance(EffectSetup.BUSTED.get(), 10 * 20));
         this.player.hurt(ModRef.DARKNESS_DAMAGE, damage);
     }
 
@@ -209,7 +216,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         return ItemStack.EMPTY;
     }
 
-    private float calculateConsumedBurnout(Level level, ItemStack light) {
+    private float calculateConsumedBurnout(Level level, ItemStack lightbringer) {
         int consumed = 2;
         if (isPlayerInRain(level, this.player)) {
             consumed = 4;
@@ -218,7 +225,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
             consumed = 16;
         }
 
-        if (light.is(ModRef.Tags.SOUL_LIGHT)) {
+        if (lightbringer.is(ModRef.Tags.SOUL_LIGHT)) {
             consumed /= 2;
         }
         return consumed;
@@ -266,7 +273,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     @Override
     public boolean isResistant() {
-        return this.player.isCreative() || this.player.isSpectator() || this.player.hasEffect(EffectSetup.SOUL_VEIL.get());
+        return this.player.isCreative() || this.player.isSpectator() || this.player.hasEffect(EffectSetup.SOUL_VEIL.get()) || this.player.isOnFire();
     }
 
     @Override

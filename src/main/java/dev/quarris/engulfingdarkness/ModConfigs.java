@@ -24,8 +24,6 @@ public class ModConfigs {
     public static ForgeConfigSpec.BooleanValue debugMode;
 
 
-
-
     public static ForgeConfigSpec.Builder init(ForgeConfigSpec.Builder builder) {
         darknessLightLevel = builder.comment(
             "The light level that the darkness should trigger at."
@@ -45,7 +43,7 @@ public class ModConfigs {
         ).defineInRange("danger_timer", 2.0, 1.0, 600.0);
         spawnVeiledTimer = builder.comment(
                 "Amount of time the Veiled effect will last (in seconds) when first joining the world or after each death. Set to 0 to never apply the effect."
-        ).defineInRange("spawn_veiled_timer", 300, 0, 1000000);
+        ).defineInRange("spawn_veiled_timer", 90, 0, 1000000);
 
         darknessLevelIncrement = builder.comment(
                 "[DEPRECATED (use darkness_timer)] How fast does the darkness engulf when in low light level."

@@ -23,8 +23,6 @@ public class HudRenderer {
     private static final ResourceLocation HUD_TEXTURE = ModRef.res("textures/gui/hud.png");
 
     public static void renderBurnoutHud(ForgeGui gui, PoseStack poseStack, float partialTick, int screenWidth, int screenHeight) {
-        if (!ModConfigs.debugMode.get()) return;
-
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
 
