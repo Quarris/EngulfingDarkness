@@ -1,5 +1,6 @@
 package dev.quarris.engulfingdarkness.effect;
 
+import dev.quarris.engulfingdarkness.ModConfigs;
 import dev.quarris.engulfingdarkness.registry.EffectSetup;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.effect.MobEffect;
@@ -31,11 +32,11 @@ public class SoulVeilMobEffect extends MobEffect {
             BlockState state = level.getBlockState(pos);
             Player player = event.getEntity();
             if (state.is(Blocks.SOUL_LANTERN)) {
-                player.addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), 30 * 20));
+                player.addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), 30 * 20 / (ModConfigs.nightmareMode.get() ? 3 : 1)));
             }
 
             if (state.is(Blocks.SOUL_CAMPFIRE)) {
-                player.addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), 60 * 20));
+                player.addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), 60 * 20 / (ModConfigs.nightmareMode.get() ? 3 : 1)));
                 CampfireBlock.dowse(player, level, pos, state);
                 level.setBlockAndUpdate(pos, state.setValue(CampfireBlock.LIT, false));
             }
@@ -44,7 +45,7 @@ public class SoulVeilMobEffect extends MobEffect {
         @SubscribeEvent
         public static void interactionVeil(TickEvent.PlayerTickEvent event) {
             if (event.player.getBlockStateOn().is(Blocks.SOUL_SAND)) {
-                event.player.addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), 5 * 20));
+                event.player.addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), 5 * 20 / (ModConfigs.nightmareMode.get() ? 3 : 1)));
             }
         }
     }
