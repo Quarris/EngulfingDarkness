@@ -39,7 +39,11 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     private final Player player;
     private float burnout;
     private Pair<Player, Integer> sentinel;
-    private final Map<Item, Integer> itemBurnouts = new HashMap<>();
+    private final Map<Item, LightBringer> itemBurnouts = new HashMap<>();
+    private boolean isInDarkness;
+    private float darknessLevel;
+    private float dangerLevel;
+    private float burnoutModifier;
 
     public Darkness(Player player) {
         this.player = player;
@@ -50,12 +54,6 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     public float getBurnout() {
         return this.burnout;
     }
-
-    // OLD
-    private boolean isInDarkness;
-    private float darknessLevel;
-    private float dangerLevel;
-    private float burnoutModifier;
 
     @Override
     public void tick() {
