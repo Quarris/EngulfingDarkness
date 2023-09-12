@@ -1,4 +1,4 @@
-package dev.quarris.engulfingdarkness.capability;
+package dev.quarris.engulfingdarkness.darkness;
 
 import dev.quarris.engulfingdarkness.EnchantmentUtils;
 import dev.quarris.engulfingdarkness.ModConfigs;
@@ -17,9 +17,9 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -39,6 +39,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     private final Player player;
     private float burnout;
     private Pair<Player, Integer> sentinel;
+    private final Map<Item, Integer> itemBurnouts = new HashMap<>();
 
     public Darkness(Player player) {
         this.player = player;
@@ -54,19 +55,28 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     private boolean isInDarkness;
     private float darknessLevel;
     private float dangerLevel;
+    private float burnoutModifier;
 
     @Override
     public void tick() {
         // Send packet to client to update whether they are in darkness
         // since clients light levels don't get fully updated
         this.updatePlayerInDarkness();
-
+        // Tries to find a nearby player to classify as a sentinel.
         this.findSentinel();
+        // Updates the burnout meter
         this.updateBurnout();
+        // Updates the darkness and danger levels
         this.updateDarknessLevels();
+        // Spawns particles when in darkness
         this.spawnParticles();
+        // Plays sound once darkness fills all the way up
         this.playSounds();
+        // Deals the damage (or redirects to sentinel) once the danger levels are all the way up.
+        // If redirected to sentinel, applies Soul Veil to the player, and Busted to the sentinel.
         this.dealDarknessDamage();
+        // Sync data to client.
+        this.syncToClient();
     }
 
     private void findSentinel() {
@@ -94,7 +104,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
                 if (this.isInDarkness && (this.isResistant() || light > ModConfigs.darknessLightLevel.get())) {
                     this.setInDarkness(false);
                     PacketHandler.sendToClient(new EnteredDarknessMessage(false), this.player);
-                } else if (!this.player.isCreative() && !this.isInDarkness && light <= ModConfigs.darknessLightLevel.get()) {
+                } else if (!this.isInDarkness && !this.player.isCreative() && light <= ModConfigs.darknessLightLevel.get()) {
                     this.setInDarkness(true);
                     PacketHandler.sendToClient(new EnteredDarknessMessage(true), this.player);
                 }
@@ -105,13 +115,20 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     private void updateBurnout() {
         if (!this.isInDarkness) return;
         ItemStack held = this.getHeldLight();
+        this.burnoutModifier = 1;
         if (held.isEmpty()) return;
 
         float consumedBurnout = this.calculateConsumedBurnout(this.player.level, held) / 20f;
 
+        if (this.darknessLevel > 0.3) {
+            this.burnoutModifier = Mth.lerp((this.darknessLevel - 0.3f) / 0.7f, 1, 6);
+        }
+
+        consumedBurnout *= this.burnoutModifier;
+
         this.burnout = Math.max(this.burnout - consumedBurnout, 0);
 
-        if (this.burnout <= 0) {
+        if (this.burnout == 0) {
             this.burnout = MAX_BURNOUT;
 
             if (!this.player.level.isClientSide()) {
@@ -176,8 +193,12 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         if (this.player.level.isClientSide()) return;
         if (this.dangerLevel != 1.0 || ModConfigs.darknessDamage.get() == 0) return;
 
-        float percentageDamage = ModConfigs.darknessDamage.get().floatValue() / 20;
-        float damage = this.player.getMaxHealth() * percentageDamage;
+        float healthDamageRatio = ModConfigs.darknessDamage.get().floatValue();
+        float damage = this.player.getMaxHealth() * healthDamageRatio;
+
+        if (ModConfigs.nightmareMode.get()) {
+            damage *= 3;
+        }
 
         int sentinel = Math.min(EnchantmentUtils.getEnchantment(this.player, EnchantmentSetup.SOUL_SENTINEL.get(), EquipmentSlot.CHEST), 4);
 
@@ -190,14 +211,14 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
             if (this.player.getHealth() < damage && sentinelPlayer.getHealth() > interceptedDamage) {
                 this.player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(IDarkness::resetBurnout);
                 sentinelPlayer.hurt(ModRef.DARKNESS_DAMAGE_SENTINEL, interceptedDamage);
-                this.player.addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), 30 * 20));
-                sentinelPlayer.addEffect(new MobEffectInstance(EffectSetup.BUSTED.get(), 60 * 20));
+                this.player.addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), 30 * 20 / (ModConfigs.nightmareMode.get() ? 3 : 1)));
+                sentinelPlayer.addEffect(new MobEffectInstance(EffectSetup.BUSTED.get(), 60 * 20 * (ModConfigs.nightmareMode.get() ? 3 : 1)));
                 sentinelPlayer.getLevel().sendParticles(ParticleTypes.REVERSE_PORTAL, sentinelPlayer.getX(), sentinelPlayer.getY() + 1, sentinelPlayer.getZ(), 80, 0.2, 0.3, 0.2, 0.05);
                 return;
             }
         }
 
-        this.player.addEffect(new MobEffectInstance(EffectSetup.BUSTED.get(), 10 * 20));
+        this.player.addEffect(new MobEffectInstance(EffectSetup.BUSTED.get(), 10 * 20 * (ModConfigs.nightmareMode.get() ? 3 : 1)));
         this.player.hurt(ModRef.DARKNESS_DAMAGE, damage);
     }
 
@@ -277,6 +298,11 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     }
 
     @Override
+    public float getBurnoutModifier() {
+        return this.burnoutModifier;
+    }
+
+    @Override
     public void syncToClient() {
         if (!this.player.level.isClientSide()) {
             PacketHandler.sendToClient(new SyncDarknessMessage(this.serializeNBT()), this.player);
@@ -290,6 +316,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         nbt.putFloat("Darkness", this.darknessLevel);
         nbt.putFloat("Danger", this.dangerLevel);
         nbt.putBoolean("IsInDarkness", this.isInDarkness);
+        nbt.putFloat("BurnoutModifier", this.burnoutModifier);
         return nbt;
     }
 
@@ -299,5 +326,6 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         this.darknessLevel = nbt.getFloat("Darkness");
         this.dangerLevel = nbt.getFloat("Danger");
         this.isInDarkness = nbt.getBoolean("IsInDarkness");
+        this.burnoutModifier = nbt.getFloat("BurnoutModifier");
     }
 }

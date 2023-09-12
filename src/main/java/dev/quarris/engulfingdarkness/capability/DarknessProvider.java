@@ -1,6 +1,7 @@
 package dev.quarris.engulfingdarkness.capability;
 
 import dev.quarris.engulfingdarkness.ModRef;
+import dev.quarris.engulfingdarkness.darkness.Darkness;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;

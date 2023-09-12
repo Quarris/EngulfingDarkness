@@ -1,7 +1,7 @@
 package dev.quarris.engulfingdarkness.packets;
 
 import dev.quarris.engulfingdarkness.ModRef;
-import dev.quarris.engulfingdarkness.capability.Darkness;
+import dev.quarris.engulfingdarkness.darkness.Darkness;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;

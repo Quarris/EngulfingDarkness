@@ -1,6 +1,6 @@
 package dev.quarris.engulfingdarkness;
 
-import dev.quarris.engulfingdarkness.capability.IDarkness;
+import dev.quarris.engulfingdarkness.darkness.IDarkness;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;

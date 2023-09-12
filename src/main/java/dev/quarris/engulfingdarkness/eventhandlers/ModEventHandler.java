@@ -1,7 +1,7 @@
 package dev.quarris.engulfingdarkness.eventhandlers;
 
 import dev.quarris.engulfingdarkness.ModRef;
-import dev.quarris.engulfingdarkness.capability.IDarkness;
+import dev.quarris.engulfingdarkness.darkness.IDarkness;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;

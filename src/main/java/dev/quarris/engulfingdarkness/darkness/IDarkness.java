@@ -1,4 +1,4 @@
-package dev.quarris.engulfingdarkness.capability;
+package dev.quarris.engulfingdarkness.darkness;
 
 public interface IDarkness {
 
@@ -21,4 +21,6 @@ public interface IDarkness {
     void resetBurnout();
 
     void syncToClient();
+
+    float getBurnoutModifier();
 }
