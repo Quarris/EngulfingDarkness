@@ -15,6 +15,9 @@ import it.unimi.dsi.fastutil.objects.ObjectIntPair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -29,6 +32,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -37,9 +41,8 @@ import java.util.Map;
 public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     private final Player player;
-    private float burnout;
     private Pair<Player, Integer> sentinel;
-    private final Map<Item, LightBringer> itemBurnouts = new HashMap<>();
+    private final Map<Item, LightBringer> lightbringers = new HashMap<>();
     private boolean isInDarkness;
     private float darknessLevel;
     private float dangerLevel;
@@ -47,12 +50,16 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     public Darkness(Player player) {
         this.player = player;
-        this.burnout = MAX_BURNOUT;
     }
 
     @Override
-    public float getBurnout() {
-        return this.burnout;
+    public float getFlameLife() {
+        LightBringer light =this.getLight(this.getHeldLight());
+        if (light != null) {
+            return light.getLife();
+        }
+
+        return 0;
     }
 
     @Override
@@ -63,7 +70,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         // Tries to find a nearby player to classify as a sentinel.
         this.findSentinel();
         // Updates the burnout meter
-        this.updateBurnout();
+        this.updateFlame();
         // Updates the darkness and danger levels
         this.updateDarknessLevels();
         // Spawns particles when in darkness
@@ -74,6 +81,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         // If redirected to sentinel, applies Soul Veil to the player, and Busted to the sentinel.
         this.dealDarknessDamage();
         // Sync data to client.
+        // TODO optimize server/client code to not have to sync the entire capability every tick
         this.syncToClient();
     }
 
@@ -110,25 +118,25 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         }
     }
 
-    private void updateBurnout() {
-        if (!this.isInDarkness) return;
+    private void updateFlame() {
         ItemStack held = this.getHeldLight();
         this.burnoutModifier = 1;
-        if (held.isEmpty()) return;
+        LightBringer lightBringer = this.getLight(held);
+        if (lightBringer == null || !this.isInDarkness) return;
 
-        float consumedBurnout = this.calculateConsumedBurnout(this.player.level, held) / 20f;
+        float consumedFlame = this.calculateConsumedFlame(this.player.level, held);
 
         if (this.darknessLevel > 0.3) {
             this.burnoutModifier = Mth.lerp((this.darknessLevel - 0.3f) / 0.7f, 1, 6);
         }
 
-        consumedBurnout *= this.burnoutModifier;
-
-        this.burnout = Math.max(this.burnout - consumedBurnout, 0);
-
-        if (this.burnout == 0) {
-            this.burnout = MAX_BURNOUT;
-
+        consumedFlame *= this.burnoutModifier;
+        int burnedFlame = Mth.ceil(consumedFlame);
+        int remainingFlame = lightBringer.burn(burnedFlame);
+        // If the item has burned out, reset it and burn it for how much it went under its flame.
+        if (remainingFlame <= 0) {
+            lightBringer.reset();
+            lightBringer.burn(Mth.abs(remainingFlame));
             if (!this.player.level.isClientSide()) {
                 if (held.isDamageableItem()) {
                     held.hurtAndBreak(1, this.player, p -> {
@@ -144,7 +152,6 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     }
 
     private void updateDarknessLevels() {
-        // If not in darkness, reset the levels.
         ItemStack heldLight = this.getHeldLight();
 
         double engulfTime = ModConfigs.darknessTimer.get();
@@ -154,14 +161,15 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
             engulfTime += 2 * valianceLevel;
         }
 
-        if (!this.isInDarkness || (!heldLight.isEmpty() && this.burnout > 0)) {
+        // If not in darkness, reset the levels.
+        if (!this.isInDarkness || !heldLight.isEmpty()) {
             this.darknessLevel = (float) Math.max(this.darknessLevel - 1 / (engulfTime * 20), 0);
             this.dangerLevel = 0;
             return;
         }
 
         // Update the darkness and danger levels when in darkness
-        if (heldLight.isEmpty() || this.burnout <= 0) {
+        if (heldLight.isEmpty() /*|| this.burnout <= 0*/) {
             this.darknessLevel = (float) Math.min(this.darknessLevel + 1 / (engulfTime * 20), 1);
             if (this.darknessLevel == 1.0) {
                 this.dangerLevel = (float) Math.min(this.dangerLevel + 1 / (dangerTimer * 20), 1);
@@ -207,7 +215,6 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
             damage *= (float) (1 - this.sentinel.right() * 0.075);
             float interceptedDamage = sentinelPlayer.getMaxHealth() * 0.25f;
             if (this.player.getHealth() < damage && sentinelPlayer.getHealth() > interceptedDamage) {
-                this.player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(IDarkness::resetBurnout);
                 sentinelPlayer.hurt(ModRef.DARKNESS_DAMAGE_SENTINEL, interceptedDamage);
                 this.player.addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), 30 * 20 / (ModConfigs.nightmareMode.get() ? 3 : 1)));
                 sentinelPlayer.addEffect(new MobEffectInstance(EffectSetup.BUSTED.get(), 60 * 20 * (ModConfigs.nightmareMode.get() ? 3 : 1)));
@@ -221,7 +228,6 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     }
 
     private ItemStack getHeldLight() {
-
         ItemStack held = this.player.getMainHandItem();
         if (held.is(ModRef.Tags.LIGHT) || held.is(ModRef.Tags.SOUL_LIGHT)) {
             return held;
@@ -235,7 +241,13 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         return ItemStack.EMPTY;
     }
 
-    private float calculateConsumedBurnout(Level level, ItemStack lightbringer) {
+    private LightBringer getLight(ItemStack stack) {
+        if (stack.isEmpty()) return null;
+
+        return this.lightbringers.computeIfAbsent(stack.getItem(), LightBringer::new);
+    }
+
+    private float calculateConsumedFlame(Level level, ItemStack held) {
         int consumed = 2;
         if (isPlayerInRain(level, this.player)) {
             consumed = 4;
@@ -244,7 +256,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
             consumed = 16;
         }
 
-        if (lightbringer.is(ModRef.Tags.SOUL_LIGHT)) {
+        if (held.is(ModRef.Tags.SOUL_LIGHT)) {
             consumed /= 2;
         }
         return consumed;
@@ -270,14 +282,8 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public float getDanger() {
+    public float getDangerLevel() {
         return this.dangerLevel;
-    }
-
-    @Override
-    public void resetBurnout() {
-        this.burnout = MAX_BURNOUT;
-        this.syncToClient();
     }
 
     @Override
@@ -286,7 +292,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public float getDarkness() {
+    public float getDarknessLevel() {
         return this.darknessLevel;
     }
 
@@ -301,6 +307,10 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     }
 
     @Override
+    public boolean isHoldingFlame() {
+        return this.getLight(this.getHeldLight()) != null;
+    }
+
     public void syncToClient() {
         if (!this.player.level.isClientSide()) {
             PacketHandler.sendToClient(new SyncDarknessMessage(this.serializeNBT()), this.player);
@@ -310,20 +320,37 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     @Override
     public CompoundTag serializeNBT() {
         CompoundTag nbt = new CompoundTag();
-        nbt.putFloat("Burnout", this.burnout);
         nbt.putFloat("Darkness", this.darknessLevel);
         nbt.putFloat("Danger", this.dangerLevel);
         nbt.putBoolean("IsInDarkness", this.isInDarkness);
         nbt.putFloat("BurnoutModifier", this.burnoutModifier);
+        ListTag lightBringersTag = new ListTag();
+        for (Map.Entry<Item, LightBringer> entry : this.lightbringers.entrySet()) {
+            CompoundTag lightTag = new CompoundTag();
+            lightTag.putString("Item", ForgeRegistries.ITEMS.getKey(entry.getKey()).toString());
+            entry.getValue().saveTo(lightTag);
+            lightBringersTag.add(lightTag);
+        }
+        nbt.put("LightBringers", lightBringersTag);
         return nbt;
     }
 
     @Override
     public void deserializeNBT(CompoundTag nbt) {
-        this.burnout = nbt.getFloat("Burnout");
         this.darknessLevel = nbt.getFloat("Darkness");
         this.dangerLevel = nbt.getFloat("Danger");
         this.isInDarkness = nbt.getBoolean("IsInDarkness");
         this.burnoutModifier = nbt.getFloat("BurnoutModifier");
+        if (nbt.contains("LightBringers")) {
+            ListTag lightBringersTag = nbt.getList("LightBringers", Tag.TAG_COMPOUND);
+            lightBringersTag.stream().map(CompoundTag.class::cast)
+                .forEach(lightTag -> {
+                    ResourceLocation itemId = new ResourceLocation(lightTag.getString("Item"));
+                    Item item = ForgeRegistries.ITEMS.getValue(itemId);
+                    LightBringer light = new LightBringer(item);
+                    light.loadFrom(lightTag);
+                    this.lightbringers.put(item, light);
+                });
+        }
     }
 }

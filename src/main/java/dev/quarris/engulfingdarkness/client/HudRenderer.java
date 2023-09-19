@@ -1,16 +1,13 @@
 package dev.quarris.engulfingdarkness.client;
 
-import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.quarris.engulfingdarkness.ModConfigs;
 import dev.quarris.engulfingdarkness.ModRef;
-import dev.quarris.engulfingdarkness.darkness.IDarkness;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 
@@ -23,7 +20,9 @@ public class HudRenderer {
         if (player == null) return;
 
         player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> {
-            if (!darkness.isInDarkness() || darkness.getBurnout() >= IDarkness.MAX_BURNOUT) return;
+            if (!darkness.isInDarkness() || !darkness.isHoldingFlame()) return;
+
+            float flameLife = darkness.getFlameLife();
 
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             RenderSystem.setShaderColor(1, 1, 1, 1);
@@ -34,7 +33,7 @@ public class HudRenderer {
             int barY = 5;
 
             // Burnout
-            float renderWidth = barWidth * (darkness.getBurnout() / IDarkness.MAX_BURNOUT);
+            float renderWidth = barWidth * flameLife;
             GuiComponent.blit(poseStack, barX, barY, 0, 0, 0, barWidth, barHeight, 256, 256); // Burnout backdrop
 
             float modifier = 1 - (darkness.getBurnoutModifier() - 1) / 5f;
@@ -45,13 +44,13 @@ public class HudRenderer {
             if (ModConfigs.debugMode.get()) {
                 // Darkness
                 barY = 15;
-                renderWidth = barWidth * (1 - darkness.getDarkness());
+                renderWidth = barWidth * (1 - darkness.getDarknessLevel());
                 GuiComponent.blit(poseStack, barX, barY, 0, 0, 0, barWidth, barHeight, 256, 256);
                 GuiComponent.blit(poseStack, barX, barY, 0, 0, 5, (int) renderWidth, barHeight, 256, 256);
 
                 // Danger
                 barY = 25;
-                renderWidth = barWidth * (1 - darkness.getDanger());
+                renderWidth = barWidth * (1 - darkness.getDangerLevel());
                 GuiComponent.blit(poseStack, barX, barY, 0, 0, 0, barWidth, barHeight, 256, 256);
                 GuiComponent.blit(poseStack, barX, barY, 0, 0, 5, (int) renderWidth, barHeight, 256, 256);
             }
