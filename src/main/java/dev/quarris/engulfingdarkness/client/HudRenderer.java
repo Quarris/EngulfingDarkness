@@ -4,16 +4,38 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.quarris.engulfingdarkness.ModConfigs;
 import dev.quarris.engulfingdarkness.ModRef;
+import dev.quarris.engulfingdarkness.darkness.LightBringer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 
 public class HudRenderer {
 
     private static final ResourceLocation HUD_TEXTURE = ModRef.res("textures/gui/hud.png");
+    private static final ResourceLocation BURNOUT_SLOT = ModRef.res("textures/gui/burnout_slot.png");
+
+    public static boolean renderItemBurnout(Font font, ItemStack stack, int xOffset, int yOffset, float blitOffset) {
+        Player player = Minecraft.getInstance().player;
+        player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> {
+            LightBringer light = darkness.getLight(stack);
+            if (light == null) return;
+            PoseStack poseStack = new PoseStack();
+            RenderSystem.setShaderColor(1, 1, 1, 1);
+            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShaderTexture(0, BURNOUT_SLOT);
+            float startY = 24 - (int) (light.getLife() * 24);
+            //Gui.blit(poseStack, xOffset - 4, yOffset - 4 + (int) startY, 0, startY, 24, (int) (24 - startY), 24, 24);
+            Gui.fill(poseStack, xOffset, yOffset + 16 - (int) (light.getLife() * 16), xOffset + 16, yOffset + 16, 0xdd000000);
+        });
+
+        return true;
+    }
 
     public static void renderBurnoutHud(ForgeGui gui, PoseStack poseStack, float partialTick, int screenWidth, int screenHeight) {
         Player player = Minecraft.getInstance().player;

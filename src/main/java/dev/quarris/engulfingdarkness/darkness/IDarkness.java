@@ -1,5 +1,7 @@
 package dev.quarris.engulfingdarkness.darkness;
 
+import net.minecraft.world.item.ItemStack;
+
 public interface IDarkness {
 
     float MAX_BURNOUT = 32.0f;
@@ -37,4 +39,6 @@ public interface IDarkness {
     boolean isInDarkness();
 
     float getBurnoutModifier();
+
+    LightBringer getLight(ItemStack stack);
 }

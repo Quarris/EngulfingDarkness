@@ -54,7 +54,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     @Override
     public float getFlameLife() {
-        LightBringer light =this.getLight(this.getHeldLight());
+        LightBringer light =this.createLight(this.getHeldLight());
         if (light != null) {
             return light.getLife();
         }
@@ -121,7 +121,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     private void updateFlame() {
         ItemStack held = this.getHeldLight();
         this.burnoutModifier = 1;
-        LightBringer lightBringer = this.getLight(held);
+        LightBringer lightBringer = this.createLight(held);
         if (lightBringer == null || !this.isInDarkness) return;
 
         float consumedFlame = this.calculateConsumedFlame(this.player.level, held);
@@ -241,10 +241,15 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         return ItemStack.EMPTY;
     }
 
-    private LightBringer getLight(ItemStack stack) {
+    private LightBringer createLight(ItemStack stack) {
         if (stack.isEmpty()) return null;
 
         return this.lightbringers.computeIfAbsent(stack.getItem(), LightBringer::new);
+    }
+
+    @Override
+    public LightBringer getLight(ItemStack stack) {
+        return this.lightbringers.get(stack.getItem());
     }
 
     private float calculateConsumedFlame(Level level, ItemStack held) {
@@ -308,7 +313,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     @Override
     public boolean isHoldingFlame() {
-        return this.getLight(this.getHeldLight()) != null;
+        return this.createLight(this.getHeldLight()) != null;
     }
 
     public void syncToClient() {
