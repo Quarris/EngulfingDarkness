@@ -1,11 +1,12 @@
 package dev.quarris.engulfingdarkness.datagen.server;
 
 import dev.quarris.engulfingdarkness.ModRef;
+import dev.quarris.engulfingdarkness.darkness.LightBringer;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.ItemTagsProvider;
 import net.minecraft.data.tags.TagsProvider;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.data.ExistingFileHelper;
 
@@ -18,10 +19,6 @@ public class ItemTagGen extends ItemTagsProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
-        // Light
-        this.tag(ModRef.Tags.LIGHT).add(Items.TORCH);
 
-        // Soul Light
-        this.tag(ModRef.Tags.SOUL_LIGHT).add(Items.SOUL_TORCH);
     }
 }

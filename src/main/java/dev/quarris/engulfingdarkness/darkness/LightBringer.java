@@ -1,48 +1,20 @@
 package dev.quarris.engulfingdarkness.darkness;
 
-import dev.quarris.engulfingdarkness.ModRef;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 
-public class LightBringer {
-    public static final int MAX_FLAME = 640;
-    private final Item item;
-    private int flame;
+import java.util.HashMap;
+import java.util.Map;
 
-    public LightBringer(Item item) {
-        this.item = item;
+public record LightBringer(Item item, int maxFlame) {
+
+    public static final Map<Item, LightBringer> REGISTRY = new HashMap<>();
+
+    public static void addLightBringer(Item item, int maxFlame) {
+        LightBringer lightBringer = new LightBringer(item, maxFlame);
+        REGISTRY.put(item, lightBringer);
     }
 
-    public void tick(ItemStack stack) {
-
-    }
-
-    public float getLife() {
-        return this.flame / (float) MAX_FLAME;
-    }
-
-    public int burn(int burnedFlame) {
-        this.flame -= burnedFlame;
-        return this.flame;
-    }
-
-    public boolean isBurned() {
-        return this.flame <= 0;
-    }
-
-    public void reset() {
-        this.flame = MAX_FLAME;
-    }
-
-    public void saveTo(CompoundTag tag) {
-        tag.putInt("Flame", this.flame);
-    }
-
-    public void loadFrom(CompoundTag tag) {
-        this.flame = tag.getInt("Flame");
+    public static LightBringer getLightBringer(Item item) {
+        return REGISTRY.get(item);
     }
 }

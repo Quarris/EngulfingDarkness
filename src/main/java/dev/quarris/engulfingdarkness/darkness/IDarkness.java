@@ -40,5 +40,5 @@ public interface IDarkness {
 
     float getBurnoutModifier();
 
-    LightBringer getLight(ItemStack stack);
+    FlameData getLight(ItemStack stack);
 }

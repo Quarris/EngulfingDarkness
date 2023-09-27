@@ -9,6 +9,7 @@ import dev.quarris.engulfingdarkness.packets.PacketHandler;
 import dev.quarris.engulfingdarkness.packets.SyncDarknessMessage;
 import dev.quarris.engulfingdarkness.registry.EffectSetup;
 import dev.quarris.engulfingdarkness.registry.EnchantmentSetup;
+import dev.quarris.engulfingdarkness.util.PlayerUtil;
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.ObjectIntMutablePair;
 import it.unimi.dsi.fastutil.objects.ObjectIntPair;
@@ -42,7 +43,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     private final Player player;
     private Pair<Player, Integer> sentinel;
-    private final Map<Item, LightBringer> lightbringers = new HashMap<>();
+    private final Map<LightBringer, FlameData> flameData = new HashMap<>();
     private boolean isInDarkness;
     private float darknessLevel;
     private float dangerLevel;
@@ -54,9 +55,9 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     @Override
     public float getFlameLife() {
-        LightBringer light =this.createLight(this.getHeldLight());
+        LightBringer light = this.getHeldLight();
         if (light != null) {
-            return light.getLife();
+            return this.flameData.get(light).getLife();
         }
 
         return 0;
@@ -119,12 +120,14 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     }
 
     private void updateFlame() {
-        ItemStack held = this.getHeldLight();
+        LightBringer light = this.getHeldLight();
         this.burnoutModifier = 1;
-        LightBringer lightBringer = this.createLight(held);
-        if (lightBringer == null || !this.isInDarkness) return;
+        if (light == null || !this.isInDarkness) return;
 
-        float consumedFlame = this.calculateConsumedFlame(this.player.level, held);
+        ItemStack stack = this.getHeldLightStack();
+        FlameData flameData = this.flameData.computeIfAbsent(light, FlameData::new);
+
+        float consumedFlame = this.calculateConsumedFlame(this.player.level, light);
 
         if (this.darknessLevel > 0.3) {
             this.burnoutModifier = Mth.lerp((this.darknessLevel - 0.3f) / 0.7f, 1, 6);
@@ -132,18 +135,18 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
         consumedFlame *= this.burnoutModifier;
         int burnedFlame = Mth.ceil(consumedFlame);
-        int remainingFlame = lightBringer.burn(burnedFlame);
+        int remainingFlame = flameData.burn(burnedFlame);
         // If the item has burned out, reset it and burn it for how much it went under its flame.
         if (remainingFlame <= 0) {
-            lightBringer.reset();
-            lightBringer.burn(Mth.abs(remainingFlame));
+            flameData.reset();
+            flameData.burn(Mth.abs(remainingFlame));
             if (!this.player.level.isClientSide()) {
-                if (held.isDamageableItem()) {
-                    held.hurtAndBreak(1, this.player, p -> {
+                if (stack.isDamageableItem()) {
+                    stack.hurtAndBreak(1, this.player, p -> {
                         p.level.playSound(null, p.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1, 1);
                     });
                 } else {
-                    held.shrink(1);
+                    stack.shrink(1);
                     this.player.level.playSound(null, this.player.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1, 1);
                 }
                 this.syncToClient();
@@ -152,7 +155,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     }
 
     private void updateDarknessLevels() {
-        ItemStack heldLight = this.getHeldLight();
+        ItemStack heldLight = this.getHeldLightStack();
 
         double engulfTime = ModConfigs.darknessTimer.get();
         double dangerTimer = ModConfigs.dangerTimer.get();
@@ -178,7 +181,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     }
 
     private void spawnParticles() {
-        if (!this.player.level.isClientSide() && this.isInDarkness && this.getHeldLight().isEmpty()) {
+        if (!this.player.level.isClientSide() && this.isInDarkness && this.getHeldLight() == null) {
             double rx = (-1 + Math.random() * 2) * 0.3;
             double ry = Math.random();
             double rz = (-1 + Math.random() * 2) * 0.3;
@@ -227,32 +230,20 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         this.player.hurt(ModRef.DARKNESS_DAMAGE, damage);
     }
 
-    private ItemStack getHeldLight() {
-        ItemStack held = this.player.getMainHandItem();
-        if (held.is(ModRef.Tags.LIGHT) || held.is(ModRef.Tags.SOUL_LIGHT)) {
-            return held;
-        }
-
-        held = this.player.getOffhandItem();
-        if (held.is(ModRef.Tags.LIGHT) || held.is(ModRef.Tags.SOUL_LIGHT)) {
-            return held;
-        }
-
-        return ItemStack.EMPTY;
+    private LightBringer getHeldLight() {
+        return LightBringer.getLightBringer(this.getHeldLightStack().getItem());
     }
 
-    private LightBringer createLight(ItemStack stack) {
-        if (stack.isEmpty()) return null;
-
-        return this.lightbringers.computeIfAbsent(stack.getItem(), LightBringer::new);
+    private ItemStack getHeldLightStack() {
+        return PlayerUtil.getHolding(this.player, s -> LightBringer.REGISTRY.containsKey(s.getItem()));
     }
 
     @Override
-    public LightBringer getLight(ItemStack stack) {
-        return this.lightbringers.get(stack.getItem());
+    public FlameData getLight(ItemStack stack) {
+        return this.flameData.get(LightBringer.getLightBringer(stack.getItem()));
     }
 
-    private float calculateConsumedFlame(Level level, ItemStack held) {
+    private float calculateConsumedFlame(Level level, LightBringer light) {
         int consumed = 2;
         if (isPlayerInRain(level, this.player)) {
             consumed = 4;
@@ -261,9 +252,6 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
             consumed = 16;
         }
 
-        if (held.is(ModRef.Tags.SOUL_LIGHT)) {
-            consumed /= 2;
-        }
         return consumed;
     }
 
@@ -313,7 +301,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     @Override
     public boolean isHoldingFlame() {
-        return this.createLight(this.getHeldLight()) != null;
+        return this.getHeldLight() != null;
     }
 
     public void syncToClient() {
@@ -330,9 +318,9 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         nbt.putBoolean("IsInDarkness", this.isInDarkness);
         nbt.putFloat("BurnoutModifier", this.burnoutModifier);
         ListTag lightBringersTag = new ListTag();
-        for (Map.Entry<Item, LightBringer> entry : this.lightbringers.entrySet()) {
+        for (Map.Entry<LightBringer, FlameData> entry : this.flameData.entrySet()) {
             CompoundTag lightTag = new CompoundTag();
-            lightTag.putString("Item", ForgeRegistries.ITEMS.getKey(entry.getKey()).toString());
+            lightTag.putString("Item", ForgeRegistries.ITEMS.getKey(entry.getKey().item()).toString());
             entry.getValue().saveTo(lightTag);
             lightBringersTag.add(lightTag);
         }
@@ -352,9 +340,10 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
                 .forEach(lightTag -> {
                     ResourceLocation itemId = new ResourceLocation(lightTag.getString("Item"));
                     Item item = ForgeRegistries.ITEMS.getValue(itemId);
-                    LightBringer light = new LightBringer(item);
-                    light.loadFrom(lightTag);
-                    this.lightbringers.put(item, light);
+                    LightBringer light = LightBringer.getLightBringer(item);
+                    FlameData data = new FlameData(light);
+                    data.loadFrom(lightTag);
+                    this.flameData.put(light, data);
                 });
         }
     }

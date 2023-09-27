@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.quarris.engulfingdarkness.ModConfigs;
 import dev.quarris.engulfingdarkness.ModRef;
-import dev.quarris.engulfingdarkness.darkness.LightBringer;
+import dev.quarris.engulfingdarkness.darkness.FlameData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Gui;
@@ -23,7 +23,7 @@ public class HudRenderer {
     public static boolean renderItemBurnout(Font font, ItemStack stack, int xOffset, int yOffset, float blitOffset) {
         Player player = Minecraft.getInstance().player;
         player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> {
-            LightBringer light = darkness.getLight(stack);
+            FlameData light = darkness.getLight(stack);
             if (light == null) return;
             PoseStack poseStack = new PoseStack();
             RenderSystem.setShaderColor(1, 1, 1, 1);

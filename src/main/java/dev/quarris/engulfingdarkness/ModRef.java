@@ -30,8 +30,7 @@ public class ModRef {
     }
 
     public static class Tags {
-        public static final TagKey<Item> LIGHT = ItemTags.create(ModRef.res("light"));
-        public static final TagKey<Item> SOUL_LIGHT = ItemTags.create(ModRef.res("soul_light"));
+        public static final TagKey<Item> LIGHT_BRINGERS = ItemTags.create(ModRef.res("light_bringers"));
     }
 
 }
