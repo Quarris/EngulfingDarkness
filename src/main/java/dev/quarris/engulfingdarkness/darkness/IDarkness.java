@@ -11,7 +11,7 @@ public interface IDarkness {
      * Once the value reaches 1, the player is considered engulfed.
      * @return How much the darkness has engulfed the player. Value is between 0 and 1.
      */
-    float getDarknessLevel();
+    float getEngulfLevel();
 
     /**
      * Once engulfed, the danger levels increase. Once reached 1, the player will take damage.
@@ -25,6 +25,8 @@ public interface IDarkness {
      */
     float getFlameLife();
 
+    void setFlame(LightBringer light, int flame);
+
     /**
      * @return true is the player is currently holding a LightBringer item.
      */
@@ -34,9 +36,9 @@ public interface IDarkness {
 
     void tick();
 
-    void setInDarkness(boolean inDarkness);
+    void setInLowLight(boolean inLowLight);
 
-    boolean isInDarkness();
+    boolean isInLowLight();
 
     float getBurnoutModifier();
 

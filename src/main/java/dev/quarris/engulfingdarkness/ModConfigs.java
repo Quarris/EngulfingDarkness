@@ -17,7 +17,7 @@ public class ModConfigs {
     public static ForgeConfigSpec.DoubleValue darknessLevelIncrement;
     public static ForgeConfigSpec.DoubleValue dangerLevelIncrement;
     public static ForgeConfigSpec.DoubleValue dangerTimer;
-    public static ForgeConfigSpec.DoubleValue darknessTimer;
+    public static ForgeConfigSpec.DoubleValue engulfTimer;
 
     public static ForgeConfigSpec.IntValue spawnVeiledTimer;
 
@@ -39,7 +39,7 @@ public class ModConfigs {
             "Percentage of max health to deal to the player every time darkness damage is dealt."
         ).defineInRange("darkness_damage", 20.0, 0.0, 100.0);
 
-        darknessTimer = builder.comment(
+        engulfTimer = builder.comment(
             "Amount of time (in seconds) for the darkness to fully engulf you."
         ).defineInRange("darkness_timer", 5.0, 1.0, 600.0);
         dangerTimer = builder.comment(

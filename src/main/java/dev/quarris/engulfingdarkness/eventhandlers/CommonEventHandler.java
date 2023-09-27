@@ -3,7 +3,10 @@ package dev.quarris.engulfingdarkness.eventhandlers;
 import dev.quarris.engulfingdarkness.ModConfigs;
 import dev.quarris.engulfingdarkness.ModRef;
 import dev.quarris.engulfingdarkness.capability.DarknessProvider;
+import dev.quarris.engulfingdarkness.darkness.Darkness;
 import dev.quarris.engulfingdarkness.darkness.IDarkness;
+import dev.quarris.engulfingdarkness.packets.PacketHandler;
+import dev.quarris.engulfingdarkness.packets.SyncDarknessMessage;
 import dev.quarris.engulfingdarkness.registry.EffectSetup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -46,13 +49,20 @@ public class CommonEventHandler {
 
     @SubscribeEvent
     public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        CompoundTag persitentData = event.getEntity().getPersistentData();
-        if (!persitentData.contains("FirstJoin")) {
-            persitentData.putBoolean("FirstJoin", true);
+        CompoundTag persistentData = event.getEntity().getPersistentData();
+        if (!persistentData.contains("FirstJoin")) {
+            persistentData.putBoolean("FirstJoin", true);
             var time = ModConfigs.spawnVeiledTimer.get() * 20 / (ModConfigs.nightmareMode.get() ? 3 : 1);
             if (time > 0) {
                 event.getEntity().addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), time));
             }
+            return;
         }
+
+        event.getEntity().getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> {
+            if (darkness instanceof Darkness d) {
+                PacketHandler.sendToClient(new SyncDarknessMessage(d.serializeNBT()), event.getEntity());
+            }
+        });
     }
 }

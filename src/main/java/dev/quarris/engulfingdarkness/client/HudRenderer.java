@@ -42,7 +42,7 @@ public class HudRenderer {
         if (player == null) return;
 
         player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> {
-            if (!darkness.isInDarkness() || !darkness.isHoldingFlame()) return;
+            if (!darkness.isInLowLight() || !darkness.isHoldingFlame()) return;
 
             float flameLife = darkness.getFlameLife();
 
@@ -66,7 +66,7 @@ public class HudRenderer {
             if (ModConfigs.debugMode.get()) {
                 // Darkness
                 barY = 15;
-                renderWidth = barWidth * (1 - darkness.getDarknessLevel());
+                renderWidth = barWidth * (1 - darkness.getEngulfLevel());
                 GuiComponent.blit(poseStack, barX, barY, 0, 0, 0, barWidth, barHeight, 256, 256);
                 GuiComponent.blit(poseStack, barX, barY, 0, 0, 5, (int) renderWidth, barHeight, 256, 256);
 

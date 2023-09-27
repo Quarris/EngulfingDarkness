@@ -25,14 +25,16 @@ public class SyncDarknessMessage {
         return new SyncDarknessMessage(buf.readNbt());
     }
 
-    public static void handle(SyncDarknessMessage msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            Minecraft.getInstance().player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> {
-                if (darkness instanceof Darkness d) {
-                    d.deserializeNBT(msg.nbt);
-                }
+    public static class Handler {
+        public static void handle(SyncDarknessMessage msg, Supplier<NetworkEvent.Context> ctx) {
+            ctx.get().enqueueWork(() -> {
+                Minecraft.getInstance().player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> {
+                    if (darkness instanceof Darkness d) {
+                        d.deserializeNBT(msg.nbt);
+                    }
+                });
             });
-        });
-        ctx.get().setPacketHandled(true);
+            ctx.get().setPacketHandled(true);
+        }
     }
 }

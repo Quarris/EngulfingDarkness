@@ -8,6 +8,7 @@ public class FlameData {
 
     public FlameData(LightBringer light) {
         this.light = light;
+        this.flame = light.maxFlame();
     }
 
     public float getLife() {
@@ -33,5 +34,13 @@ public class FlameData {
 
     public void loadFrom(CompoundTag tag) {
         this.flame = tag.getInt("Flame");
+    }
+
+    public void set(int flame) {
+        this.flame = flame;
+    }
+
+    public int getFlame() {
+        return this.flame;
     }
 }

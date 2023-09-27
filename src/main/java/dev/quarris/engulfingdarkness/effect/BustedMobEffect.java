@@ -14,7 +14,7 @@ import java.util.List;
 public class BustedMobEffect extends MobEffect {
 
     public BustedMobEffect() {
-        super(MobEffectCategory.HARMFUL, 0xffcd61);
+        super(MobEffectCategory.HARMFUL, 0x552bbd);
     }
 
     @Override

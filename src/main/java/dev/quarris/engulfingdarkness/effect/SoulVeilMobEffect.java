@@ -35,7 +35,7 @@ public class SoulVeilMobEffect extends MobEffect {
                 player.addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), 30 * 20 / (ModConfigs.nightmareMode.get() ? 3 : 1)));
             }
 
-            if (state.is(Blocks.SOUL_CAMPFIRE)) {
+            if (state.is(Blocks.SOUL_CAMPFIRE) && state.getValue(CampfireBlock.LIT)) {
                 player.addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), 60 * 20 / (ModConfigs.nightmareMode.get() ? 3 : 1)));
                 CampfireBlock.dowse(player, level, pos, state);
                 level.setBlockAndUpdate(pos, state.setValue(CampfireBlock.LIT, false));

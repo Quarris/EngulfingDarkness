@@ -12,9 +12,6 @@ import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.ForgeRegistry;
-
-import java.util.stream.Stream;
 
 @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = ModRef.ID)
 public class ClientEventHandler {
@@ -22,8 +19,8 @@ public class ClientEventHandler {
     @SubscribeEvent
     public static void renderFog(ViewportEvent.RenderFog event) {
         Minecraft.getInstance().player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> {
-            if (darkness.getDarknessLevel() > 0.01) {
-                float scale = (float) Mth.clamp((1 - darkness.getDarknessLevel()), 0.01, 1);
+            if (darkness.getEngulfLevel() > 0.01) {
+                float scale = (float) Mth.clamp((1 - darkness.getEngulfLevel()), 0.01, 1);
                 event.scaleNearPlaneDistance(scale);
                 event.scaleFarPlaneDistance(scale + 0.05f);
                 event.setCanceled(true);
@@ -34,8 +31,8 @@ public class ClientEventHandler {
     @SubscribeEvent
     public static void applyFogColors(ViewportEvent.ComputeFogColor event) {
         Minecraft.getInstance().player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> {
-            if (darkness.getDarknessLevel() > 0.01) {
-                float perc = 1 - darkness.getDarknessLevel();
+            if (darkness.getEngulfLevel() > 0.01) {
+                float perc = 1 - darkness.getEngulfLevel();
                 event.setRed(Mth.lerp(perc, 0, event.getRed()));
                 event.setGreen(Mth.lerp(perc, 0, event.getGreen()));
                 event.setBlue(Mth.lerp(perc, 0, event.getBlue()));
