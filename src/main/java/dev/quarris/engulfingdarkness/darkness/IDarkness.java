@@ -4,8 +4,6 @@ import net.minecraft.world.item.ItemStack;
 
 public interface IDarkness {
 
-    float MAX_BURNOUT = 32.0f;
-
     /**
      * This value increases as the player is in darkness. This is used for the fog that encloses on the player.
      * Once the value reaches 1, the player is considered engulfed.
@@ -27,6 +25,8 @@ public interface IDarkness {
 
     void setFlame(LightBringer light, int flame);
 
+    Popup getPopup();
+
     /**
      * @return true is the player is currently holding a LightBringer item.
      */
@@ -43,4 +43,10 @@ public interface IDarkness {
     float getConsumptionAmplifier();
 
     FlameData getLight(ItemStack stack);
+
+    record Popup(int time, int color) {
+        public boolean isActive() {
+            return this.time != -1;
+        }
+    }
 }

@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.quarris.engulfingdarkness.ModConfigs;
 import dev.quarris.engulfingdarkness.ModRef;
 import dev.quarris.engulfingdarkness.darkness.FlameData;
+import dev.quarris.engulfingdarkness.darkness.IDarkness;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Gui;
@@ -62,6 +63,17 @@ public class HudRenderer {
             float modifier = 1 - Mth.clamp(darkness.getConsumptionAmplifier() / 5f, 0, 1);
             RenderSystem.setShaderColor(1, modifier, modifier, 1); // Redden the burnout value
             GuiComponent.blit(poseStack, barX, barY, 0, 0, 5, (int) renderWidth, barHeight, 256, 256); // Burnout value
+
+            IDarkness.Popup popup = darkness.getPopup();
+            if (popup.isActive() && (popup.time() / 5) % 2 == 0) {
+                int alpha = (popup.color() >> 24) & 255;
+                int red = (popup.color() >> 16) & 255;
+                int green = (popup.color() >> 8) & 255;
+                int blue = (popup.color()) & 255;
+                RenderSystem.setShaderColor(red / 255f, green / 255f, blue / 255f, alpha / 255f); // Popup color
+                GuiComponent.blit(poseStack, barX, barY, 0, 0, 10, barWidth, barHeight, 256, 256); // Popup
+            }
+
             RenderSystem.setShaderColor(1, 1, 1, 1);
 
             if (ModConfigs.debugMode.get()) {

@@ -50,6 +50,8 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     private float dangerLevel;
     private float burnoutModifier;
     private float consumptionAmplifier;
+    private int popupTime;
+    private int popupColor;
 
     public Darkness(Player player) {
         this.player = player;
@@ -73,6 +75,8 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     @Override
     public void tick() {
+        // Updates the popup timer
+        this.updatePopup();
         // Send packet to client to update whether they are in darkness
         // since clients light levels don't get fully updated
         this.updatePlayerInLowLight();
@@ -89,6 +93,17 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         // Deals the damage (or redirects to sentinel) once the danger levels are all the way up.
         // If redirected to sentinel, applies Soul Veil to the player, and Busted to the sentinel.
         this.dealDarknessDamage();
+    }
+
+    private void updatePopup() {
+        if (this.popupTime > 0) {
+            this.popupTime--;
+        }
+
+        if (this.popupTime == 0) {
+            this.popupTime = -1;
+            this.popupColor = -1;
+        }
     }
 
     private void updatePlayerInLowLight() {
@@ -153,6 +168,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         // If the item has burned out, reset it and burn it for how much it went under its flame.
         if (remainingFlame <= 0) {
             flameData.reset();
+            this.setPopup(10, 0xFFFFFFFF);
             flameData.burn(Mth.abs(remainingFlame));
             // Destroy item once burned
             if (!this.player.level.isClientSide()) {
@@ -243,6 +259,16 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         this.player.hurt(ModRef.DARKNESS_DAMAGE, damage);
     }
 
+    public void setPopup(int time, int color) {
+        this.popupTime = time;
+        this.popupColor = color;
+    }
+
+    @Override
+    public Popup getPopup() {
+        return new Popup(this.popupTime, this.popupColor);
+    }
+
     public boolean isInDarkness() {
         return this.isInLowLight && this.getHeldLight() == null;
     }
@@ -298,6 +324,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     @Override
     public void setInLowLight(boolean inLowLight) {
         this.isInLowLight = inLowLight;
+        this.setPopup(20, 0xFFFFFFFF);
         this.syncToClient(new SetLowLightMessage(inLowLight));
     }
 
