@@ -40,7 +40,7 @@ public interface IDarkness {
 
     boolean isInLowLight();
 
-    float getBurnoutModifier();
+    float getConsumptionAmplifier();
 
     FlameData getLight(ItemStack stack);
 }

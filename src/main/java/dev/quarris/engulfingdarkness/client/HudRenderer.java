@@ -11,6 +11,7 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
@@ -58,7 +59,7 @@ public class HudRenderer {
             float renderWidth = barWidth * flameLife;
             GuiComponent.blit(poseStack, barX, barY, 0, 0, 0, barWidth, barHeight, 256, 256); // Burnout backdrop
 
-            float modifier = 1 - (darkness.getBurnoutModifier() - 1) / 5f;
+            float modifier = 1 - Mth.clamp(darkness.getConsumptionAmplifier() / 5f, 0, 1);
             RenderSystem.setShaderColor(1, modifier, modifier, 1); // Redden the burnout value
             GuiComponent.blit(poseStack, barX, barY, 0, 0, 5, (int) renderWidth, barHeight, 256, 256); // Burnout value
             RenderSystem.setShaderColor(1, 1, 1, 1);

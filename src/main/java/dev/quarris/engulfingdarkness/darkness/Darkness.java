@@ -7,7 +7,6 @@ import dev.quarris.engulfingdarkness.enchantment.SoulSentinelEnchantment;
 import dev.quarris.engulfingdarkness.packets.SetLowLightMessage;
 import dev.quarris.engulfingdarkness.packets.FlameDataMessage;
 import dev.quarris.engulfingdarkness.packets.PacketHandler;
-import dev.quarris.engulfingdarkness.packets.SyncDarknessMessage;
 import dev.quarris.engulfingdarkness.registry.EffectSetup;
 import dev.quarris.engulfingdarkness.registry.EnchantmentSetup;
 import dev.quarris.engulfingdarkness.util.PlayerUtil;
@@ -42,6 +41,7 @@ import java.util.Map;
 
 public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
+    public static final int BASE_CONSUMPTION = 2;
     private final Player player;
     private Pair<Player, Integer> sentinel;
     private final Map<LightBringer, FlameData> flameData = new HashMap<>();
@@ -49,6 +49,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     private float engulfLevel;
     private float dangerLevel;
     private float burnoutModifier;
+    private float consumptionAmplifier;
 
     public Darkness(Player player) {
         this.player = player;
@@ -88,8 +89,6 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         // Deals the damage (or redirects to sentinel) once the danger levels are all the way up.
         // If redirected to sentinel, applies Soul Veil to the player, and Busted to the sentinel.
         this.dealDarknessDamage();
-        // Sync data to client.
-        //this.syncToClient(new SyncDarknessMessage(this.serializeNBT()));
     }
 
     private void updatePlayerInLowLight() {
@@ -141,7 +140,8 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         ItemStack stack = this.getHeldLightStack();
         FlameData flameData = this.flameData.computeIfAbsent(light, FlameData::new);
 
-        float consumedFlame = this.calculateConsumedFlame(this.player.level, light);
+        this.consumptionAmplifier = this.calculateConsumptionAmplifier(this.player.level, light);
+        float consumedFlame = BASE_CONSUMPTION * this.consumptionAmplifier;
 
         if (this.engulfLevel > 0.3) {
             this.burnoutModifier = Mth.lerp((this.engulfLevel - 0.3f) / 0.7f, 1, 6);
@@ -165,7 +165,6 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
                 }
                 // TODO Do burned action here
                 this.player.level.playSound(null, this.player.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1, 1);
-
             }
         }
         this.syncToClient(new FlameDataMessage(light, flameData.getFlame()));
@@ -173,7 +172,6 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     private void updateDarknessLevels() {
         LightBringer light = this.getHeldLight();
-
         double engulfTimer = ModConfigs.engulfTimer.get();
         double dangerTimer = ModConfigs.dangerTimer.get();
         int valianceLevel = EnchantmentUtils.getEnchantment(this.player, EnchantmentSetup.VALIANCE.get(), EquipmentSlot.HEAD);
@@ -262,16 +260,15 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         return this.flameData.get(LightBringer.getLightBringer(stack.getItem()));
     }
 
-    private float calculateConsumedFlame(Level level, LightBringer light) {
-        int consumed = 2;
+    private float calculateConsumptionAmplifier(Level level, LightBringer light) {
         if (isPlayerInRain(level, this.player)) {
-            consumed = 4;
+            return 2;
         }
         if (this.player.isUnderWater()) {
-            consumed = 16;
+            return 4;
         }
 
-        return consumed;
+        return 1;
     }
 
     private static boolean isPlayerInRain(Level level, Player player) {
@@ -315,8 +312,8 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public float getBurnoutModifier() {
-        return this.burnoutModifier;
+    public float getConsumptionAmplifier() {
+        return this.consumptionAmplifier;
     }
 
     @Override
