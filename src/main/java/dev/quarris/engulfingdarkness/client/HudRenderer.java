@@ -2,7 +2,6 @@ package dev.quarris.engulfingdarkness.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import dev.quarris.engulfingdarkness.ModConfigs;
 import dev.quarris.engulfingdarkness.ModRef;
 import dev.quarris.engulfingdarkness.darkness.FlameData;
 import dev.quarris.engulfingdarkness.darkness.IDarkness;
@@ -76,7 +75,7 @@ public class HudRenderer {
 
             RenderSystem.setShaderColor(1, 1, 1, 1);
 
-            if (ModConfigs.debugMode.get()) {
+            if (ModRef.configs().debugMode) {
                 // Darkness
                 barY = 15;
                 renderWidth = barWidth * (1 - darkness.getEngulfLevel());

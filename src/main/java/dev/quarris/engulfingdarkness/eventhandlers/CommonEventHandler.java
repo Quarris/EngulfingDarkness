@@ -1,6 +1,5 @@
 package dev.quarris.engulfingdarkness.eventhandlers;
 
-import dev.quarris.engulfingdarkness.ModConfigs;
 import dev.quarris.engulfingdarkness.ModRef;
 import dev.quarris.engulfingdarkness.capability.DarknessProvider;
 import dev.quarris.engulfingdarkness.darkness.Darkness;
@@ -34,7 +33,7 @@ public class CommonEventHandler {
             return;
         }
 
-        var time = ModConfigs.spawnVeiledTimer.get() * 20 / (ModConfigs.nightmareMode.get() ? 3 : 1);
+        var time = ModRef.configs().spawnVeiledTimer * 20 / (ModRef.configs().nightmareMode ? 3 : 1);
         if (time > 0) {
             event.getEntity().addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), time));
         }
@@ -52,7 +51,7 @@ public class CommonEventHandler {
         CompoundTag persistentData = event.getEntity().getPersistentData();
         if (!persistentData.contains("FirstJoin")) {
             persistentData.putBoolean("FirstJoin", true);
-            var time = ModConfigs.spawnVeiledTimer.get() * 20 / (ModConfigs.nightmareMode.get() ? 3 : 1);
+            var time = ModRef.configs().spawnVeiledTimer * 20 / (ModRef.configs().nightmareMode ? 3 : 1);
             if (time > 0) {
                 event.getEntity().addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), time));
             }

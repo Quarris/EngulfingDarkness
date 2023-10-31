@@ -1,7 +1,6 @@
 package dev.quarris.engulfingdarkness.darkness;
 
 import dev.quarris.engulfingdarkness.EnchantmentUtils;
-import dev.quarris.engulfingdarkness.ModConfigs;
 import dev.quarris.engulfingdarkness.ModRef;
 import dev.quarris.engulfingdarkness.enchantment.SoulSentinelEnchantment;
 import dev.quarris.engulfingdarkness.packets.SetLowLightMessage;
@@ -121,7 +120,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         }
 
         int light = this.player.level.getMaxLocalRawBrightness(new BlockPos(this.player.getEyePosition(1)));
-        boolean isLowLight = light <= ModConfigs.darknessLightLevel.get();
+        boolean isLowLight = light <= ModRef.configs().darknessLightLevel;
         if (this.isInLowLight && !isLowLight) { // No longer in darkness
             this.setInLowLight(false);
         } else if (!this.isInLowLight && isLowLight) { // Now in darkness
@@ -188,8 +187,8 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     private void updateDarknessLevels() {
         LightBringer light = this.getHeldLight();
-        double engulfTimer = ModConfigs.engulfTimer.get();
-        double dangerTimer = ModConfigs.dangerTimer.get();
+        double engulfTimer = ModRef.configs().engulfTimer;
+        double dangerTimer = ModRef.configs().dangerTimer;
         int valianceLevel = EnchantmentUtils.getEnchantment(this.player, EnchantmentSetup.VALIANCE.get(), EquipmentSlot.HEAD);
         if (valianceLevel > 0) {
             engulfTimer += 2 * valianceLevel;
@@ -229,12 +228,12 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     private void dealDarknessDamage() {
         if (this.player.level.isClientSide()) return;
-        if (this.dangerLevel != 1.0 || ModConfigs.darknessDamage.get() == 0) return;
+        if (this.dangerLevel != 1.0 || ModRef.configs().darknessDamage == 0) return;
 
-        float healthDamageRatio = ModConfigs.darknessDamage.get().floatValue() / 100;
+        float healthDamageRatio = (float) ModRef.configs().darknessDamage / 100;
         float damage = this.player.getMaxHealth() * healthDamageRatio;
 
-        if (ModConfigs.nightmareMode.get()) {
+        if (ModRef.configs().nightmareMode) {
             damage *= 3;
         }
 
@@ -248,14 +247,14 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
             float interceptedDamage = sentinelPlayer.getMaxHealth() * 0.25f;
             if (this.player.getHealth() < damage && sentinelPlayer.getHealth() > interceptedDamage) {
                 sentinelPlayer.hurt(ModRef.DARKNESS_DAMAGE_SENTINEL, interceptedDamage);
-                this.player.addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), 30 * 20 / (ModConfigs.nightmareMode.get() ? 3 : 1)));
-                sentinelPlayer.addEffect(new MobEffectInstance(EffectSetup.BUSTED.get(), 60 * 20 * (ModConfigs.nightmareMode.get() ? 3 : 1)));
+                this.player.addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), 30 * 20 / (ModRef.configs().nightmareMode ? 3 : 1)));
+                sentinelPlayer.addEffect(new MobEffectInstance(EffectSetup.BUSTED.get(), 60 * 20 * (ModRef.configs().nightmareMode ? 3 : 1)));
                 sentinelPlayer.getLevel().sendParticles(ParticleTypes.REVERSE_PORTAL, sentinelPlayer.getX(), sentinelPlayer.getY() + 1, sentinelPlayer.getZ(), 80, 0.2, 0.3, 0.2, 0.05);
                 return;
             }
         }
 
-        this.player.addEffect(new MobEffectInstance(EffectSetup.BUSTED.get(), 10 * 20 * (ModConfigs.nightmareMode.get() ? 3 : 1)));
+        this.player.addEffect(new MobEffectInstance(EffectSetup.BUSTED.get(), 10 * 20 * (ModRef.configs().nightmareMode ? 3 : 1)));
         this.player.hurt(ModRef.DARKNESS_DAMAGE, damage);
     }
 
@@ -335,7 +334,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     @Override
     public boolean isResistant() {
-        return !ModConfigs.isAllowed(this.player.level.dimension().location()) || this.player.isCreative() || this.player.isSpectator() || this.player.hasEffect(EffectSetup.SOUL_VEIL.get()) || this.player.isOnFire();
+        return !ModRef.configs().isAllowed(this.player.level.dimension().location()) || this.player.isCreative() || this.player.isSpectator() || this.player.hasEffect(EffectSetup.SOUL_VEIL.get()) || this.player.isOnFire();
     }
 
     @Override
@@ -385,6 +384,10 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
                     ResourceLocation itemId = new ResourceLocation(lightTag.getString("Item"));
                     Item item = ForgeRegistries.ITEMS.getValue(itemId);
                     LightBringer light = LightBringer.getLightBringer(item);
+                    if (light == null) {
+                        ModRef.LOGGER.warn(item + " is not longer a Light Bringer. Skipping.");
+                        return;
+                    }
                     FlameData data = new FlameData(light);
                     data.loadFrom(lightTag);
                     this.flameData.put(light, data);

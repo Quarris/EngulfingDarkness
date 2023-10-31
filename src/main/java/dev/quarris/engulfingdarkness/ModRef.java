@@ -18,6 +18,11 @@ public class ModRef {
 
     public static final Logger LOGGER = LogManager.getLogger(EngulfingDarkness.class);
 
+    static ModConfigs CONFIGS;
+    public static ModConfigs configs() {
+        return CONFIGS;
+    }
+
     public static ResourceLocation res(String res) {
         return new ResourceLocation(ID, res);
     }
