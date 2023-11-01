@@ -4,15 +4,19 @@ import dev.quarris.engulfingdarkness.ModRef;
 import dev.quarris.engulfingdarkness.capability.DarknessProvider;
 import dev.quarris.engulfingdarkness.darkness.Darkness;
 import dev.quarris.engulfingdarkness.darkness.IDarkness;
+import dev.quarris.engulfingdarkness.darkness.LightBringer;
 import dev.quarris.engulfingdarkness.packets.PacketHandler;
 import dev.quarris.engulfingdarkness.packets.SyncDarknessMessage;
 import dev.quarris.engulfingdarkness.registry.EffectSetup;
+import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -61,6 +65,15 @@ public class CommonEventHandler {
         event.getEntity().getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> {
             if (darkness instanceof Darkness d) {
                 PacketHandler.sendToClient(new SyncDarknessMessage(d.serializeNBT()), event.getEntity());
+            }
+        });
+    }
+
+    @SubscribeEvent
+    public static void addHoverText(ItemTooltipEvent event) {
+        LightBringer.REGISTRY.keySet().forEach(item -> {
+            if (event.getItemStack().is(item)) {
+                event.getToolTip().add(Component.translatable("engulfingdarkness.lightbringer").withStyle(ChatFormatting.YELLOW));
             }
         });
     }

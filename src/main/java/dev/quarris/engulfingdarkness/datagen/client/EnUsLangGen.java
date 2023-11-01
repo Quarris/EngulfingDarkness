@@ -22,5 +22,6 @@ public class EnUsLangGen extends LanguageProvider {
         this.add(EnchantmentSetup.VALIANCE.get(), "Valiance");
         this.add(EnchantmentSetup.SOUL_SENTINEL.get(), "Soul Sentinel");
         this.add("item.minecraft.potion.effect.soul_veil", "Potion of Veil");
+        this.add("engulfingdarkness.lightbringer", "Light Bringer");
     }
 }
