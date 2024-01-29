@@ -2,6 +2,7 @@ package dev.quarris.engulfingdarkness.eventhandlers;
 
 import dev.quarris.engulfingdarkness.ModRef;
 import dev.quarris.engulfingdarkness.capability.DarknessProvider;
+import dev.quarris.engulfingdarkness.configs.FlameConfigs;
 import dev.quarris.engulfingdarkness.darkness.Darkness;
 import dev.quarris.engulfingdarkness.darkness.IDarkness;
 import dev.quarris.engulfingdarkness.darkness.LightBringer;
@@ -71,7 +72,7 @@ public class CommonEventHandler {
 
     @SubscribeEvent
     public static void addHoverText(ItemTooltipEvent event) {
-        LightBringer.REGISTRY.keySet().forEach(item -> {
+        FlameConfigs.LIGHT_BRINGERS.keySet().forEach(item -> {
             if (event.getItemStack().is(item)) {
                 event.getToolTip().add(Component.translatable("engulfingdarkness.lightbringer").withStyle(ChatFormatting.YELLOW));
             }

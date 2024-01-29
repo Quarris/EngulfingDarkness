@@ -1,6 +1,9 @@
 package dev.quarris.engulfingdarkness.darkness;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 public class FlameData {
     private final LightBringer light;
@@ -11,12 +14,16 @@ public class FlameData {
         this.flame = light.maxFlame();
     }
 
+    public void onBurnout(Player player, ItemStack stack) {
+        this.light.effects().forEach(burnoutEffect -> burnoutEffect.onBurnout(player, stack, this.light));
+    }
+
     public float getLife() {
         return this.flame / (float) this.light.maxFlame();
     }
 
     public int burn(int burnedFlame) {
-        this.flame -= burnedFlame;
+        this.flame = Mth.clamp(this.flame - burnedFlame, 0, this.light.maxFlame());
         return this.flame;
     }
 

@@ -30,9 +30,8 @@ public class HudRenderer {
             RenderSystem.setShaderColor(1, 1, 1, 1);
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             RenderSystem.setShaderTexture(0, BURNOUT_SLOT);
-            float startY = 24 - (int) (light.getLife() * 24);
-            //Gui.blit(poseStack, xOffset - 4, yOffset - 4 + (int) startY, 0, startY, 24, (int) (24 - startY), 24, 24);
-            Gui.fill(poseStack, xOffset, yOffset + 16 - (int) (light.getLife() * 16), xOffset + 16, yOffset + 16, 0xdd000000);
+            float life = Math.min(1, light.getLife());
+            Gui.fill(poseStack, xOffset, yOffset + 16 - (int) (life * 16), xOffset + 16, yOffset + 16, 0xdd000000);
         });
 
         return true;
@@ -45,7 +44,7 @@ public class HudRenderer {
         player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> {
             if (!darkness.isInLowLight() || !darkness.isHoldingFlame()) return;
 
-            float flameLife = darkness.getFlameLife();
+            float flameLife = Math.min(1, darkness.getFlameLife());
 
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             RenderSystem.setShaderColor(1, 1, 1, 1);

@@ -2,6 +2,7 @@ package dev.quarris.engulfingdarkness.darkness;
 
 import dev.quarris.engulfingdarkness.EnchantmentUtils;
 import dev.quarris.engulfingdarkness.ModRef;
+import dev.quarris.engulfingdarkness.configs.FlameConfigs;
 import dev.quarris.engulfingdarkness.enchantment.SoulSentinelEnchantment;
 import dev.quarris.engulfingdarkness.packets.SetLowLightMessage;
 import dev.quarris.engulfingdarkness.packets.FlameDataMessage;
@@ -47,7 +48,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     private boolean isInLowLight;
     private float engulfLevel;
     private float dangerLevel;
-    private float burnoutModifier;
+    private float consumptionModifier;
     private float consumptionAmplifier;
     private int popupTime;
     private int popupColor;
@@ -148,20 +149,21 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     private void updateFlame() {
         LightBringer light = this.getHeldLight();
-        this.burnoutModifier = 1;
+        this.consumptionModifier = 1;
         if (light == null || !this.isInLowLight) return;
+        if (light.isWaterOnly() && !isInRainOrUnderwater(this.player)) return;
 
         ItemStack stack = this.getHeldLightStack();
         FlameData flameData = this.flameData.computeIfAbsent(light, FlameData::new);
 
         this.consumptionAmplifier = this.calculateConsumptionAmplifier(this.player.level, light);
-        float consumedFlame = BASE_CONSUMPTION * this.consumptionAmplifier;
+        float consumedFlame = light.baseConsumption() * this.consumptionAmplifier;
 
         if (this.engulfLevel > 0.3) {
-            this.burnoutModifier = Mth.lerp((this.engulfLevel - 0.3f) / 0.7f, 1, 6);
+            this.consumptionModifier = Mth.lerp((this.engulfLevel - 0.3f) / 0.7f, 1, 6);
         }
 
-        consumedFlame *= this.burnoutModifier;
+        consumedFlame *= this.consumptionModifier;
         int burnedFlame = Mth.ceil(consumedFlame);
         int remainingFlame = flameData.burn(burnedFlame);
         // If the item has burned out, reset it and burn it for how much it went under its flame.
@@ -172,14 +174,11 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
             // Destroy item once burned
             if (!this.player.level.isClientSide()) {
                 if (stack.isDamageableItem()) {
-                    stack.hurtAndBreak(1, this.player, p -> {
-
-                    });
+                    stack.hurtAndBreak(1, this.player, p -> {});
                 } else {
                     stack.shrink(1);
                 }
-                // TODO Do burned action here
-                this.player.level.playSound(null, this.player.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1, 1);
+                flameData.onBurnout(this.player, stack);
             }
         }
         this.syncToClient(new FlameDataMessage(light, flameData.getFlame()));
@@ -277,7 +276,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     }
 
     private ItemStack getHeldLightStack() {
-        return PlayerUtil.getHolding(this.player, s -> LightBringer.REGISTRY.containsKey(s.getItem()));
+        return PlayerUtil.getHolding(this.player, s -> FlameConfigs.LIGHT_BRINGERS.containsKey(s.getItem()));
     }
 
     @Override
@@ -287,13 +286,18 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     private float calculateConsumptionAmplifier(Level level, LightBringer light) {
         if (isPlayerInRain(level, this.player)) {
-            return 2;
+            return light.rainConsumptionMultiplier();
         }
+
         if (this.player.isUnderWater()) {
-            return 4;
+            return light.underwaterConsumptionMultiplier();
         }
 
         return 1;
+    }
+
+    private static boolean isInRainOrUnderwater(Player player) {
+        return isPlayerInRain(player.level, player) || player.isUnderWater();
     }
 
     private static boolean isPlayerInRain(Level level, Player player) {
@@ -359,7 +363,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         nbt.putFloat("Darkness", this.engulfLevel);
         nbt.putFloat("Danger", this.dangerLevel);
         nbt.putBoolean("IsInDarkness", this.isInLowLight);
-        nbt.putFloat("BurnoutModifier", this.burnoutModifier);
+        nbt.putFloat("BurnoutModifier", this.consumptionModifier);
         ListTag lightBringersTag = new ListTag();
         for (Map.Entry<LightBringer, FlameData> entry : this.flameData.entrySet()) {
             CompoundTag lightTag = new CompoundTag();
@@ -376,7 +380,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         this.engulfLevel = nbt.getFloat("Darkness");
         this.dangerLevel = nbt.getFloat("Danger");
         this.isInLowLight = nbt.getBoolean("IsInDarkness");
-        this.burnoutModifier = nbt.getFloat("BurnoutModifier");
+        this.consumptionModifier = nbt.getFloat("BurnoutModifier");
         if (nbt.contains("LightBringers")) {
             ListTag lightBringersTag = nbt.getList("LightBringers", Tag.TAG_COMPOUND);
             lightBringersTag.stream().map(CompoundTag.class::cast)

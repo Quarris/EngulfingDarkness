@@ -1,5 +1,6 @@
 package dev.quarris.engulfingdarkness;
 
+import dev.quarris.engulfingdarkness.configs.FlameConfigs;
 import dev.quarris.engulfingdarkness.darkness.LightBringer;
 import dev.quarris.engulfingdarkness.packets.PacketHandler;
 import dev.quarris.engulfingdarkness.registry.EffectSetup;
@@ -34,6 +35,7 @@ public class EngulfingDarkness {
 
     public void commonSetup(FMLCommonSetupEvent event) {
         PacketHandler.register();
+        FlameConfigs.load();
         // Load light bringers
     }
 }
