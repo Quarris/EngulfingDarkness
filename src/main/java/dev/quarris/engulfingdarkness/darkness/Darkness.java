@@ -185,7 +185,6 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     }
 
     private void updateDarknessLevels() {
-        LightBringer light = this.getHeldLight();
         double engulfTimer = ModRef.configs().engulfTimer;
         double dangerTimer = ModRef.configs().dangerTimer;
         int valianceLevel = EnchantmentUtils.getEnchantment(this.player, EnchantmentSetup.VALIANCE.get(), EquipmentSlot.HEAD);
@@ -268,7 +267,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     }
 
     public boolean isInDarkness() {
-        return this.isInLowLight && this.getHeldLight() == null;
+        return this.isInLowLight && (this.getHeldLight() == null || this.getHeldLight().isWaterOnly() && !isInRainOrUnderwater(this.player));
     }
 
     private LightBringer getHeldLight() {
@@ -348,7 +347,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     @Override
     public boolean isHoldingFlame() {
-        return this.getHeldLight() != null;
+        return this.getHeldLight() != null && this.getHeldLight().isWaterOnly() == isInRainOrUnderwater(this.player);
     }
 
     public <T> void syncToClient(T packet) {

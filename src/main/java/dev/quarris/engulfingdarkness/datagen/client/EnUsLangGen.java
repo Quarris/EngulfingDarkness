@@ -19,6 +19,7 @@ public class EnUsLangGen extends LanguageProvider {
         this.add(EffectSetup.BUSTED.get(), "Busted");
         this.add(EffectSetup.SOUL_VEIL.get(), "Soul Veil");
         this.add(EffectSetup.SENTINEL_PROTECTION.get(), "Interception");
+        this.add(EffectSetup.DEATH_WARD.get(), "Death Ward");
         this.add(EnchantmentSetup.VALIANCE.get(), "Valiance");
         this.add(EnchantmentSetup.SOUL_SENTINEL.get(), "Soul Sentinel");
         this.add("item.minecraft.potion.effect.soul_veil", "Potion of Veil");

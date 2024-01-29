@@ -18,9 +18,4 @@ public class SentinelProtectionEffect extends MobEffect {
     public List<ItemStack> getCurativeItems() {
         return Collections.emptyList();
     }
-
-    @Override
-    public void applyEffectTick(LivingEntity entity, int amplifier) {
-
-    }
 }
