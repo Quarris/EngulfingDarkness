@@ -25,6 +25,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -41,13 +42,12 @@ import java.util.Map;
 
 public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
-    public static final int BASE_CONSUMPTION = 2;
     private final Player player;
     private Pair<Player, Integer> sentinel;
     private final Map<LightBringer, FlameData> flameData = new HashMap<>();
     private boolean isInLowLight;
-    private float engulfLevel;
-    private float dangerLevel;
+    private float engulfLevel; // How much the darkness has engulfed the player. Visually it is the fog closing in.
+    private float dangerLevel; // Once the darkness has fully engulfed, this is the timer before the player takes dmg.
     private float consumptionModifier;
     private float consumptionAmplifier;
     private int popupTime;
@@ -187,6 +187,11 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     private void updateDarknessLevels() {
         double engulfTimer = ModRef.configs().engulfTimer;
         double dangerTimer = ModRef.configs().dangerTimer;
+        int resilienceLevel = -1;
+        if (this.player.hasEffect(EffectSetup.RESILIENCE.get())) {
+            resilienceLevel = this.player.getEffect(EffectSetup.RESILIENCE.get()).getAmplifier();
+        }
+
         int valianceLevel = EnchantmentUtils.getEnchantment(this.player, EnchantmentSetup.VALIANCE.get(), EquipmentSlot.HEAD);
         if (valianceLevel > 0) {
             engulfTimer += 2 * valianceLevel;
@@ -194,13 +199,23 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
         // If not in darkness, reset the levels.
         if (!this.isInDarkness()) {
-            this.engulfLevel = (float) Math.max(this.engulfLevel - 1 / (engulfTimer * 20), 0);
+            // % recovery increase based on Resilience potion effect
+            float resilience = 0;
+            if (resilienceLevel != -1) {
+                resilience = 0.5f + resilienceLevel * 0.05f;
+            }
+            this.engulfLevel = (float) Math.max(this.engulfLevel - (1 / (engulfTimer * 20)) * (1 + resilience), 0);
             this.dangerLevel = 0;
             return;
         }
 
         // Update the darkness and danger levels when in darkness
-        this.engulfLevel = (float) Math.min(this.engulfLevel + 1 / (engulfTimer * 20), 1);
+        // % engulfing decrease based on Resilience potion effect
+        float resilience = 0;
+        if (resilienceLevel != -1) {
+            resilience = 0.2f + resilienceLevel * 0.05f;
+        }
+        this.engulfLevel = (float) Math.min(this.engulfLevel + (1 / (engulfTimer * 20)) * (1 - resilience), 1);
         if (this.engulfLevel == 1.0) {
             this.dangerLevel = (float) Math.min(this.dangerLevel + 1 / (dangerTimer * 20), 1);
         }
@@ -347,7 +362,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     @Override
     public boolean isHoldingFlame() {
-        return this.getHeldLight() != null && this.getHeldLight().isWaterOnly() == isInRainOrUnderwater(this.player);
+        return this.getHeldLight() != null && (!this.getHeldLight().isWaterOnly() || isInRainOrUnderwater(this.player));
     }
 
     public <T> void syncToClient(T packet) {
