@@ -16,7 +16,7 @@ import net.minecraftforge.fml.common.Mod;
 public class DeathWardEffect extends MobEffect {
 
     public DeathWardEffect() {
-        super(MobEffectCategory.BENEFICIAL, 0x444444ff);
+        super(MobEffectCategory.BENEFICIAL, 0x444444);
     }
 
     @Mod.EventBusSubscriber

@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "dev.quarris.engulfingdarkness.mixins",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "engulfingdarkness.refmap.json",
+  "mixins": [
+    "AbstractArrowMixin",
+    "LivingEntityMixin"
+  ],
+  "client": [
+  ],
+  "minVersion": "0.8",
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

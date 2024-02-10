@@ -17,6 +17,7 @@ public class EffectSetup {
     public static final RegistryObject<MobEffect> SENTINEL_PROTECTION = REGISTRY.register("sentinel_protection", SentinelProtectionEffect::new);
     public static final RegistryObject<MobEffect> DEATH_WARD = REGISTRY.register("death_ward", DeathWardEffect::new);
     public static final RegistryObject<MobEffect> RESILIENCE = REGISTRY.register("resilience", ResilienceEffect::new);
+    public static final RegistryObject<MobEffect> PIERCER = REGISTRY.register("piercer", PiercerEffect::new);
 
     public static void init(IEventBus bus) {
         REGISTRY.register(bus);
