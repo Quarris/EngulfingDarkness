@@ -19,5 +19,4 @@ public class GuiMixin {
             RenderSystem.setShaderColor(0.7f, 0.1f, 0.9f, 1);
         }
     }
-
 }
