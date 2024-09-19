@@ -5,9 +5,13 @@
   "refmap": "engulfingdarkness.refmap.json",
   "mixins": [
     "AbstractArrowMixin",
-    "LivingEntityMixin"
+    "CrossbowItemMixin",
+    "FishingHookMixin",
+    "LivingEntityMixin",
+    "NearestAttackableTargetGoalMixin"
   ],
   "client": [
+    "GuiMixin"
   ],
   "minVersion": "0.8",
   "injectors": {

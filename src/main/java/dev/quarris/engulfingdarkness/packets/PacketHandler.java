@@ -1,6 +1,7 @@
 package dev.quarris.engulfingdarkness.packets;
 
 import dev.quarris.engulfingdarkness.ModRef;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.NetworkDirection;
@@ -23,10 +24,15 @@ public class PacketHandler {
         INST.registerMessage(0, SyncDarknessMessage.class, SyncDarknessMessage::encode, SyncDarknessMessage::decode, SyncDarknessMessage.Handler::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         INST.registerMessage(1, SetLowLightMessage.class, SetLowLightMessage::encode, SetLowLightMessage::decode, SetLowLightMessage.Handler::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         INST.registerMessage(2, FlameDataMessage.class, FlameDataMessage::encode, FlameDataMessage::decode, FlameDataMessage.Handler::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        INST.registerMessage(3, PlayerMovedMessage.class, PlayerMovedMessage::encode, PlayerMovedMessage::decode, PlayerMovedMessage.Handler::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
     }
 
     public static <MSG> void sendToClient(MSG msg, Player player) {
         INST.sendTo(msg, ((ServerPlayer) player).connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+    }
+
+    public static <MSG> void sendTo(MSG msg, LocalPlayer player) {
+        INST.sendTo(msg, player.connection.getConnection(), NetworkDirection.PLAY_TO_SERVER);
     }
 
 }

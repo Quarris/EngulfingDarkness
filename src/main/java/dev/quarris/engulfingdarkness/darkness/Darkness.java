@@ -352,7 +352,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     @Override
     public boolean isResistant() {
-        return !ModRef.configs().isAllowed(this.player.level.dimension().location()) || this.player.isCreative() || this.player.isSpectator() || this.player.hasEffect(EffectSetup.SOUL_VEIL.get()) || this.player.isOnFire();
+        return !ModRef.configs().isAllowed(this.player.level.dimension().location()) || this.player.isCreative() || this.player.isSpectator() || this.player.hasEffect(EffectSetup.SOUL_VEIL.get()) || this.player.hasEffect(EffectSetup.SOUL_GUARD.get()) || this.player.isOnFire();
     }
 
     @Override

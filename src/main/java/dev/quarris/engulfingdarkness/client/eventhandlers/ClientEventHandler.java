@@ -1,12 +1,15 @@
 package dev.quarris.engulfingdarkness.client.eventhandlers;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.quarris.engulfingdarkness.ModRef;
 import dev.quarris.engulfingdarkness.client.HudRenderer;
+import dev.quarris.engulfingdarkness.registry.EffectSetup;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterItemDecorationsEvent;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -40,9 +43,22 @@ public class ClientEventHandler {
         });
     }
 
+    @SubscribeEvent
+    public static void turnHeartsPurplePre(RenderGuiOverlayEvent.Pre event) {
+        if (Minecraft.getInstance().player.hasEffect(EffectSetup.BUSTED.get()) && event.getOverlay().id().equals(VanillaGuiOverlay.PLAYER_HEALTH.id())) {
+            //RenderSystem.clearColor(1, 0, 1, 1);
+        }
+    }
+
+    @SubscribeEvent
+    public static void turnHeartsPurplePost(RenderGuiOverlayEvent.Post event) {
+        if (Minecraft.getInstance().player.hasEffect(EffectSetup.BUSTED.get()) && event.getOverlay().id().equals(VanillaGuiOverlay.PLAYER_HEALTH.id())) {
+            //RenderSystem.clearColor(1, 1, 1, 1);
+        }
+    }
+
     @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = ModRef.ID, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static class ClientModEventHandler {
-
         @SubscribeEvent
         public static void renderBurnout(RegisterGuiOverlaysEvent event) {
             event.registerAbove(VanillaGuiOverlay.EXPERIENCE_BAR.id(), "burnout", HudRenderer::renderBurnoutHud);
@@ -52,7 +68,6 @@ public class ClientEventHandler {
         public static void registerLightBringerBurnoutDecorator(RegisterItemDecorationsEvent event) {
             ForgeRegistries.ITEMS.forEach(item -> event.register(item, HudRenderer::renderItemBurnout));
         }
-
     }
 
 }

@@ -3,6 +3,7 @@ package dev.quarris.engulfingdarkness.mixins;
 import dev.quarris.engulfingdarkness.registry.EffectSetup;
 import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -21,8 +22,10 @@ public abstract class LivingEntityMixin {
 
     @Shadow public abstract double getAttributeValue(Attribute pAttribute);
 
+    // PIERCER
+    // Effectively reduces armor by 75%
     @Inject(method = "getDamageAfterArmorAbsorb", at = @At(value = "HEAD"), cancellable = true)
-    private void ignoreArmorFromPiercer(DamageSource pDamageSource, float pDamageAmount, CallbackInfoReturnable<Float> cir) {
+    private void livingentity_ignoreArmorFromPiercer(DamageSource pDamageSource, float pDamageAmount, CallbackInfoReturnable<Float> cir) {
         if (pDamageSource.isBypassArmor() || !(pDamageSource.getEntity() instanceof LivingEntity shooter)) {
             return;
         }
@@ -34,4 +37,12 @@ public abstract class LivingEntityMixin {
         }
     }
 
+    // EASY TARGET
+    // Forces line of sight if the target has Easy Target effect, ignoring walls.
+    @Inject(method = "hasLineOfSight", at = @At(value = "RETURN", ordinal = 2), cancellable = true)
+    private void livingentity_forceLineOfSightFromEasyTarget(Entity pEntity, CallbackInfoReturnable<Boolean> cir) {
+        if (!cir.getReturnValueZ() && pEntity instanceof LivingEntity entity && entity.hasEffect(EffectSetup.EASY_TARGET.get())) {
+            cir.setReturnValue(true);
+        }
+    }
 }

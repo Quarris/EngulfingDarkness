@@ -8,7 +8,6 @@ import java.util.*;
 
 public final class LightBringer {
 
-    public static final Map<Item, LightBringer> REGISTRY = new HashMap<>();
     private final Item item;
     private final boolean waterOnly;
     private final int maxFlame;
