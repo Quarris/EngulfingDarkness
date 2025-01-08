@@ -2,7 +2,6 @@ package dev.quarris.engulfingdarkness.configs;
 
 import com.google.common.collect.Lists;
 import com.google.gson.*;
-import com.google.gson.stream.JsonWriter;
 import dev.quarris.engulfingdarkness.ModRef;
 import dev.quarris.engulfingdarkness.darkness.LightBringer;
 import dev.quarris.engulfingdarkness.darkness.burnout.*;
@@ -41,8 +40,10 @@ public class FlameConfigs {
         BURNOUT_EFFECTS.put(GiveItem.SERIALIZER.id(), GiveItem.SERIALIZER);
         BURNOUT_EFFECTS.put(PlaySound.SERIALIZER.id(), PlaySound.SERIALIZER);
         BURNOUT_EFFECTS.put(RemovePotionEffect.SERIALIZER.id(), RemovePotionEffect.SERIALIZER);
+        BURNOUT_EFFECTS.put(RemoveCurseEffect.SERIALIZER.id(), RemoveCurseEffect.SERIALIZER);
 
         DEFAULT_LIGHTBRINGERS.put("torch", new LightBringer(Items.TORCH, 64000, 200, 2.0f, 8.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1))));
+        DEFAULT_LIGHTBRINGERS.put("candle", new LightBringer(Items.CANDLE, 64000, 200, 2.0f, 8.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1))));
         DEFAULT_LIGHTBRINGERS.put("ochre_froglight", new LightBringer(Items.OCHRE_FROGLIGHT, 64000, 35, 1.0f, 1.0f, Lists.newArrayList(new ApplyPotionEffect(MobEffects.HEAL, 20, 0, true), new PlaySound(SoundEvents.FROGLIGHT_BREAK, 1, 1))));
         DEFAULT_LIGHTBRINGERS.put("pearlescent_froglight", new LightBringer(Items.PEARLESCENT_FROGLIGHT, 64000, 35, 1.0f, 1.0f, Lists.newArrayList(new ApplyPotionEffect(MobEffects.HEAL, 20, 0, true), new PlaySound(SoundEvents.FROGLIGHT_BREAK, 1, 1))));
         DEFAULT_LIGHTBRINGERS.put("verdant_froglight", new LightBringer(Items.VERDANT_FROGLIGHT, 64000, 35, 1.0f, 1.0f, Lists.newArrayList(new ApplyPotionEffect(MobEffects.HEAL, 20, 0, true), new PlaySound(SoundEvents.FROGLIGHT_BREAK, 1, 1))));
@@ -57,12 +58,12 @@ public class FlameConfigs {
         DEFAULT_LIGHTBRINGERS.put("white_candle", new LightBringer(Items.WHITE_CANDLE, 64000, 205, 1.3f, 3.3f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.DARKNESS, 80, 0, true))));
         DEFAULT_LIGHTBRINGERS.put("light_gray_candle", new LightBringer(Items.LIGHT_GRAY_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(EffectSetup.PIERCER.get(), 80, 0, true))));
         DEFAULT_LIGHTBRINGERS.put("gray_candle", new LightBringer(Items.GRAY_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.DAMAGE_RESISTANCE, 60, 0, false))));
-        DEFAULT_LIGHTBRINGERS.put("brown_candle", new LightBringer(Items.BROWN_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.SATURATION, 20, 0, false))));
+        DEFAULT_LIGHTBRINGERS.put("brown_candle", new LightBringer(Items.BROWN_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.SATURATION, 2, 0, false))));
         DEFAULT_LIGHTBRINGERS.put("red_candle", new LightBringer(Items.RED_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.DAMAGE_BOOST, 80, 1, false))));
         DEFAULT_LIGHTBRINGERS.put("orange_candle", new LightBringer(Items.ORANGE_CANDLE, 64000, 200, 1.5f, 5.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(EffectSetup.RESILIENCE.get(), 1200, 0, false))));
         DEFAULT_LIGHTBRINGERS.put("yellow_candle", new LightBringer(Items.YELLOW_CANDLE, 64000, 400, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.DIG_SPEED, 80, 1, false))));
         DEFAULT_LIGHTBRINGERS.put("lime_candle", new LightBringer(Items.LIME_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.JUMP, 600, 1, false), new ApplyPotionEffect(MobEffects.SLOW_FALLING, 600, 1, false))));
-        DEFAULT_LIGHTBRINGERS.put("green_candle", new LightBringer(Items.GREEN_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.LUCK, 2400, 0, false), new ApplyPotionEffect(EffectSetup.CASTER.get(), 2400, 0, false))));
+        DEFAULT_LIGHTBRINGERS.put("green_candle", new LightBringer(Items.GREEN_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.LUCK, 2400, 0, false), new ApplyPotionEffect(EffectSetup.CASTER.get(), 2400, 2, false))));
         DEFAULT_LIGHTBRINGERS.put("cyan_candle", new LightBringer(Items.CYAN_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIREWORK_ROCKET_LAUNCH, 1, 1), new ApplyPotionEffect(MobEffects.LEVITATION, 20, 59, false))));
         DEFAULT_LIGHTBRINGERS.put("light_blue_candle", new LightBringer(Items.LIGHT_BLUE_CANDLE, 64000, 200, 0.8f, 0.5f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.WATER_BREATHING, 1200, 0, false))));
         DEFAULT_LIGHTBRINGERS.put("blue_candle", new LightBringer(Items.BLUE_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.MOVEMENT_SPEED, 80, 1, false))));
@@ -70,7 +71,7 @@ public class FlameConfigs {
         DEFAULT_LIGHTBRINGERS.put("magenta_candle", new LightBringer(Items.MAGENTA_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new RemovePotionEffect(EffectSetup.BUSTED.get(), false))));
         DEFAULT_LIGHTBRINGERS.put("pink_candle", new LightBringer(Items.PINK_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(EffectSetup.DEATH_WARD.get(), 40, 0, false))));
         // TODO vvv Has a 3% chance to remove curses (utilizing the Forge Curse tag for mod compatibility) vvv
-        DEFAULT_LIGHTBRINGERS.put("black_candle", new LightBringer(Items.BLACK_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1))));
+        DEFAULT_LIGHTBRINGERS.put("black_candle", new LightBringer(Items.BLACK_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new RemoveCurseEffect(0.03f))));
         DEFAULT_LIGHTBRINGERS.put("sea_pickle", new LightBringer(Items.SEA_PICKLE, true, 64000, 200, 1.0f, 0.1f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1))));
         DEFAULT_LIGHTBRINGERS.put("soul_campfire", new LightBringer(Items.SOUL_CAMPFIRE, 64000, 120, 1.3f, 6.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1))));
         DEFAULT_LIGHTBRINGERS.put("soul_lantern", new LightBringer(Items.SOUL_LANTERN, 64000, 100, 1.0f, 1.4f, Lists.newArrayList(new PlaySound(SoundEvents.LANTERN_BREAK, 1, 1))));
@@ -79,25 +80,24 @@ public class FlameConfigs {
     }
 
     public static void generateDefaults() {
+
+        // Defaults
         File defaultsDir = DEFAULTS_PATH.toFile();
-        if (defaultsDir.exists()) {
-            ModRef.LOGGER.debug("Skipping generating default flame data.");
-        } else {
-            defaultsDir.mkdirs();
-            ModRef.LOGGER.info("Generating default flame data.");
-            for (Map.Entry<String, LightBringer> entry : DEFAULT_LIGHTBRINGERS.entrySet()) {
-                try {
-                    File file = new File(defaultsDir, entry.getKey() + ".json");
-                    file.createNewFile();
-                    FileWriter writer = new FileWriter(file);
-                    writer.write(GSON.toJson(serialize(entry.getValue())));
-                    writer.close();
-                } catch (IOException e) {
-                    ModRef.LOGGER.error("Could not generate default flame data for " + entry.getKey() + ".json");
-                }
+        defaultsDir.mkdirs();
+        ModRef.LOGGER.info("Generating default flame data.");
+        for (Map.Entry<String, LightBringer> entry : DEFAULT_LIGHTBRINGERS.entrySet()) {
+            try {
+                File file = new File(defaultsDir, entry.getKey() + ".json");
+                file.createNewFile();
+                FileWriter writer = new FileWriter(file);
+                writer.write(GSON.toJson(serialize(entry.getValue())));
+                writer.close();
+            } catch (IOException e) {
+                ModRef.LOGGER.error("Could not generate default flame data for " + entry.getKey() + ".json");
             }
         }
 
+        // Flame Data Configs
         File flameDataDir = FLAME_DATA_PATH.toFile();
         if (flameDataDir.exists()) {
             ModRef.LOGGER.debug("Skipping generating initial flame data.");
@@ -118,19 +118,20 @@ public class FlameConfigs {
             }
         }
 
+        // Readme file
         File readmeFile = README_PATH.toFile();
         if (!readmeFile.exists()) {
             ModRef.LOGGER.info("Generating readme file.");
-            try {
-                readmeFile.createNewFile();
-                FileWriter writer = new FileWriter(readmeFile);
-                writer.write(README_TEXT);
-                writer.close();
-            } catch (IOException e) {
-                ModRef.LOGGER.error("Could not generate the readme file.", e);
-            }
         }
 
+        try {
+            readmeFile.createNewFile();
+            FileWriter writer = new FileWriter(readmeFile);
+            writer.write(README_TEXT);
+            writer.close();
+        } catch (IOException e) {
+            ModRef.LOGGER.error("Could not generate the readme file.", e);
+        }
     }
 
     public static void load() {
@@ -196,13 +197,10 @@ public class FlameConfigs {
 
     public static final String README_TEXT = """
         'defaults' folder is only for reference, it does not do anything in game.
-        You can regenerate the 'defaults' folder by removing it.
                 
         'flame_data' folder holds json file which define lightbringers.
         You can delete any default file in there to remove it from the game, or add your own lightbringers.
         You can regenerate the 'flame_data' folder by removing it.
-        
-        Removing this file will regenerate itself.
         """;
 
 }

@@ -17,6 +17,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BustedMobEffect extends MobEffect {
 
@@ -30,7 +32,7 @@ public class BustedMobEffect extends MobEffect {
     }
 
     public static boolean shouldClearEffect(MobEffect effect) {
-        return effect.isBeneficial() && effect != EffectSetup.SOUL_GUARD.get();
+        return effect.isBeneficial() && effect != EffectSetup.SOUL_GUARD.get() && effect != EffectSetup.SENTINEL_PROTECTION.get() && effect != EffectSetup.SOUL_VEIL.get();
     }
 
     @Mod.EventBusSubscriber
@@ -48,12 +50,9 @@ public class BustedMobEffect extends MobEffect {
         public static void cleansePositiveEffects(MobEffectEvent.Added event) {
             // Remove all positive effects when busted is added.
             if (event.getEffectInstance().getEffect() == EffectSetup.BUSTED.get()) {
-                Iterator<MobEffectInstance> iterator = event.getEntity().getActiveEffects().iterator();
-                while (iterator.hasNext()) {
-                    MobEffectInstance effect = iterator.next();
-                    if (shouldClearEffect(effect.getEffect())) {
-                        event.getEntity().removeEffect(effect.getEffect());
-                    }
+                Set<MobEffect> effects = event.getEntity().getActiveEffects().stream().map(MobEffectInstance::getEffect).filter(BustedMobEffect::shouldClearEffect).collect(Collectors.toSet());
+                for (MobEffect effect : effects) {
+                    event.getEntity().removeEffect(effect);
                 }
             }
         }
@@ -69,7 +68,8 @@ public class BustedMobEffect extends MobEffect {
         @SubscribeEvent
         public static void preventRemovingNegativeEffects(MobEffectEvent.Remove event) {
             // Prevent cleansing of negative effects when busted is in effect.
-            if (event.getEntity().hasEffect(EffectSetup.BUSTED.get()) && !shouldClearEffect(event.getEffect())) {
+            // Added busted as able to be removed to allow /effect command clearing.
+            if (event.getEntity().hasEffect(EffectSetup.BUSTED.get()) && !(event.getEffect().isBeneficial() || event.getEffect() == EffectSetup.BUSTED.get())) {
                 event.setCanceled(true);
             }
         }

@@ -29,7 +29,8 @@ public abstract class FishingHookMixin {
         }
 
         int casterLevel = CasterMobEffect.getEffect(player);
-        this.timeUntilLured *= (1 - CasterMobEffect.getLureReduction(casterLevel));
+        float newLureTime = this.timeUntilLured * (1 - CasterMobEffect.getLureReduction(casterLevel));
+        this.timeUntilLured *= (int) newLureTime;
     }
 
 }

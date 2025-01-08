@@ -21,6 +21,7 @@ import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -35,12 +36,8 @@ public class SoulGuardMobEffect extends MobEffect {
     public static class Events {
 
         @SubscribeEvent
-        public static void onJoinWorld(EntityJoinLevelEvent event) {
-            if (!(event.getEntity() instanceof Player player)) {
-                return;
-            }
-
-            player.addEffect(new MobEffectInstance(EffectSetup.SOUL_GUARD.get(), 1000000, 0, false, false, true));
+        public static void onJoinWorld(PlayerEvent.PlayerLoggedInEvent event) {
+            event.getEntity().addEffect(new MobEffectInstance(EffectSetup.SOUL_GUARD.get(), 1000000, 0, false, false, true));
         }
 
         @SubscribeEvent

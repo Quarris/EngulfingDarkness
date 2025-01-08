@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import dev.quarris.engulfingdarkness.darkness.LightBringer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -25,7 +26,7 @@ public class PlaySound extends BurnoutEffect<PlaySound.Serializer> {
 
     @Override
     public void onBurnout(Player player, ItemStack stack, LightBringer lightBringer) {
-        player.playSound(this.sound, this.volume, this.pitch);
+        player.level.playSound(null, player, this.sound, SoundSource.PLAYERS, this.volume, this.pitch);
     }
 
     @Override

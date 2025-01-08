@@ -17,13 +17,14 @@ public class CasterMobEffect extends MobEffect {
         if (effect == null) {
             return 0;
         }
+
         int level = effect.getAmplifier();
         return Math.min(level + 1, 5);
     }
 
     public static float getLureReduction(int casterLevel) {
         return switch (casterLevel) {
-            case 0 -> 0;
+            case 0 -> 0f;
             case 1 -> 0.1f;
             case 2 -> 0.2f;
             case 3 -> 0.3f;

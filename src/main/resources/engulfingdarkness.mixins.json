@@ -5,7 +5,6 @@
   "refmap": "engulfingdarkness.refmap.json",
   "mixins": [
     "AbstractArrowMixin",
-    "CrossbowItemMixin",
     "FishingHookMixin",
     "LivingEntityMixin",
     "NearestAttackableTargetGoalMixin"
