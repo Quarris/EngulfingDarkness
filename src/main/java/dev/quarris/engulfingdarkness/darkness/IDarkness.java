@@ -1,7 +1,9 @@
 package dev.quarris.engulfingdarkness.darkness;
 
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.capabilities.AutoRegisterCapability;
 
+@AutoRegisterCapability
 public interface IDarkness {
 
     /**

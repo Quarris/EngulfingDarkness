@@ -20,8 +20,8 @@ public abstract class AbstractArrowMixin extends Projectile {
 
     @Inject(method = "getPierceLevel", at = @At("RETURN"), cancellable = true)
     public void increaseLevelFromEffect(CallbackInfoReturnable<Byte> ci) {
-        if (this.getOwner() instanceof LivingEntity owner && owner.hasEffect(EffectSetup.PIERCER.get())) {
-            ci.setReturnValue((byte) (ci.getReturnValue() + owner.getEffect(EffectSetup.PIERCER.get()).getAmplifier() + 1));
+        if (this.getOwner() instanceof LivingEntity owner && owner.hasEffect(EffectSetup.PIERCER.getHolder().get())) {
+            ci.setReturnValue((byte) (ci.getReturnValue() + owner.getEffect(EffectSetup.PIERCER.getHolder().get()).getAmplifier() + 1));
         }
     }
 }

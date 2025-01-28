@@ -13,7 +13,7 @@ public class CasterMobEffect extends MobEffect {
     }
 
     public static int getEffect(Player player) {
-        MobEffectInstance effect = player.getEffect(EffectSetup.CASTER.get());
+        MobEffectInstance effect = player.getEffect(EffectSetup.CASTER.getHolder().get());
         if (effect == null) {
             return 0;
         }

@@ -5,13 +5,13 @@ import dev.quarris.engulfingdarkness.capability.DarknessProvider;
 import dev.quarris.engulfingdarkness.configs.FlameConfigs;
 import dev.quarris.engulfingdarkness.darkness.Darkness;
 import dev.quarris.engulfingdarkness.darkness.IDarkness;
-import dev.quarris.engulfingdarkness.darkness.LightBringer;
 import dev.quarris.engulfingdarkness.packets.PacketHandler;
 import dev.quarris.engulfingdarkness.packets.SyncDarknessMessage;
 import dev.quarris.engulfingdarkness.registry.EffectSetup;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -34,13 +34,13 @@ public class CommonEventHandler {
 
     @SubscribeEvent
     public static void applyEffectOnRespawn(PlayerEvent.PlayerRespawnEvent event) {
-        if (event.isEndConquered() || event.getEntity().level.isClientSide) {
+        if (event.isEndConquered() || event.getEntity().level().isClientSide) {
             return;
         }
 
         var time = ModRef.configs().spawnVeiledTimer * 20 / (ModRef.configs().nightmareMode ? 3 : 1);
         if (time > 0) {
-            event.getEntity().addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), time));
+            event.getEntity().addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.getHolder().get(), time));
         }
     }
 
@@ -58,14 +58,14 @@ public class CommonEventHandler {
             persistentData.putBoolean("FirstJoin", true);
             var time = ModRef.configs().spawnVeiledTimer * 20 / (ModRef.configs().nightmareMode ? 3 : 1);
             if (time > 0) {
-                event.getEntity().addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), time));
+                event.getEntity().addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.getHolder().get(), time));
             }
             return;
         }
 
         event.getEntity().getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> {
             if (darkness instanceof Darkness d) {
-                PacketHandler.sendToClient(new SyncDarknessMessage(d.serializeNBT()), event.getEntity());
+                PacketHandler.sendTo(new SyncDarknessMessage(d.serializeNBT(event.getEntity().level().registryAccess())), (ServerPlayer) event.getEntity());
             }
         });
     }

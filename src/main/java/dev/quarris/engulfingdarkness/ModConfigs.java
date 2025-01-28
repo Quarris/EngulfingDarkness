@@ -47,7 +47,7 @@ public class ModConfigs {
         ).defineInRange("darkness_level", 4, 0, 15);
 
         builder.push("dimension");
-        this.rawWhitelistedDims = builder.defineListAllowEmpty(Collections.singletonList("whitelisted_dimensions"), ModConfigs::defaultDims, o -> o instanceof String name && ResourceLocation.isValidResourceLocation(name));
+        this.rawWhitelistedDims = builder.defineListAllowEmpty(Collections.singletonList("whitelisted_dimensions"), ModConfigs::defaultDims, o -> o instanceof String name && ResourceLocation.tryParse(name) != null);
         this.rawTreatDimsAsBlacklisted = builder.define("treat_dims_as_blacklist", false);
         builder.pop();
 
@@ -84,7 +84,7 @@ public class ModConfigs {
             try {
                 String[] split = entry.split(";");
                 Integer.parseInt(split[1]); // Check if int.
-                return ResourceLocation.isValidResourceLocation(split[0]);
+                return ResourceLocation.tryParse(split[0]) != null;
             } catch (Exception e) {
                 ModRef.LOGGER.error("Could not parse Light Bringer config data", e);
                 return false;
@@ -117,11 +117,11 @@ public class ModConfigs {
         this.debugMode = this.rawDebugMode.get();
         this.nightmareMode = this.rawNightmareMode.get();
 
-        this.whitelistedDims = this.rawWhitelistedDims.get().stream().map(ResourceLocation::new).collect(Collectors.toSet());
+        this.whitelistedDims = this.rawWhitelistedDims.get().stream().map(ResourceLocation::parse).collect(Collectors.toSet());
 
         this.rawLightBringers.get().forEach(s -> {
             String[] split = s.split(";");
-            ResourceLocation itemId = new ResourceLocation(split[0]);
+            ResourceLocation itemId = ResourceLocation.parse(split[0]);
             int flame = Integer.parseInt(split[1]);
             LightBringer.addLightBringer(ForgeRegistries.ITEMS.getValue(itemId), flame);
         });

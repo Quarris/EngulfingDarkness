@@ -50,26 +50,26 @@ public class FlameConfigs {
         DEFAULT_LIGHTBRINGERS.put("glowstone", new LightBringer(Items.GLOWSTONE, 64000, 100, 1.0f, 1.0f, Lists.newArrayList(new GiveItem(Items.GLOWSTONE_DUST, 1), new PlaySound(SoundEvents.GLASS_BREAK, 1, 1))));
         DEFAULT_LIGHTBRINGERS.put("jack_o_lantern", new LightBringer(Items.JACK_O_LANTERN, 64000, 175, 1.5f, 7.0f, Lists.newArrayList(new PlaySound(SoundEvents.WOOD_BREAK, 1, 1))));
         DEFAULT_LIGHTBRINGERS.put("lantern", new LightBringer(Items.LANTERN, 64000, 125, 1.0f, 5.0f, Lists.newArrayList(new PlaySound(SoundEvents.LANTERN_BREAK, 1, 1))));
-        DEFAULT_LIGHTBRINGERS.put("lava_bucket", new LightBringer(Items.LAVA_BUCKET, 64000, 40, 2.0f, 100.0f, Lists.newArrayList(new GiveItem(Items.BUCKET, 1), new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(EffectSetup.EASY_TARGET.get(), 2400, 0, false))));
+        DEFAULT_LIGHTBRINGERS.put("lava_bucket", new LightBringer(Items.LAVA_BUCKET, 64000, 40, 2.0f, 100.0f, Lists.newArrayList(new GiveItem(Items.BUCKET, 1), new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(EffectSetup.EASY_TARGET.getHolder().get(), 2400, 0, false))));
         DEFAULT_LIGHTBRINGERS.put("campfire", new LightBringer(Items.CAMPFIRE, 64000, 150, 1.2f, 8.0f, Lists.newArrayList(new GiveItem(Items.CHARCOAL, 1), new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1))));
         DEFAULT_LIGHTBRINGERS.put("sea_lantern", new LightBringer(Items.SEA_LANTERN, 64000, 150, 0.8f, 0.5f, Lists.newArrayList(new GiveItem(Items.PRISMARINE_SHARD, 1), new PlaySound(SoundEvents.GLASS_BREAK, 1, 1))));
         DEFAULT_LIGHTBRINGERS.put("shroomlight", new LightBringer(Items.SHROOMLIGHT, 64000, 150, 1f, 1f, Lists.newArrayList(new PlaySound(SoundEvents.SHROOMLIGHT_BREAK, 1, 1))));
         DEFAULT_LIGHTBRINGERS.put("end_rod", new LightBringer(Items.END_ROD, 64000, 200, 1f, 1f, Lists.newArrayList(new PlaySound(SoundEvents.WOOD_BREAK, 1, 1))));
         DEFAULT_LIGHTBRINGERS.put("white_candle", new LightBringer(Items.WHITE_CANDLE, 64000, 205, 1.3f, 3.3f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.DARKNESS, 80, 0, true))));
-        DEFAULT_LIGHTBRINGERS.put("light_gray_candle", new LightBringer(Items.LIGHT_GRAY_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(EffectSetup.PIERCER.get(), 80, 0, true))));
+        DEFAULT_LIGHTBRINGERS.put("light_gray_candle", new LightBringer(Items.LIGHT_GRAY_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(EffectSetup.PIERCER.getHolder().get(), 80, 0, true))));
         DEFAULT_LIGHTBRINGERS.put("gray_candle", new LightBringer(Items.GRAY_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.DAMAGE_RESISTANCE, 60, 0, false))));
         DEFAULT_LIGHTBRINGERS.put("brown_candle", new LightBringer(Items.BROWN_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.SATURATION, 2, 0, false))));
         DEFAULT_LIGHTBRINGERS.put("red_candle", new LightBringer(Items.RED_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.DAMAGE_BOOST, 80, 1, false))));
-        DEFAULT_LIGHTBRINGERS.put("orange_candle", new LightBringer(Items.ORANGE_CANDLE, 64000, 200, 1.5f, 5.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(EffectSetup.RESILIENCE.get(), 1200, 0, false))));
+        DEFAULT_LIGHTBRINGERS.put("orange_candle", new LightBringer(Items.ORANGE_CANDLE, 64000, 200, 1.5f, 5.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(EffectSetup.RESILIENCE.getHolder().get(), 1200, 0, false))));
         DEFAULT_LIGHTBRINGERS.put("yellow_candle", new LightBringer(Items.YELLOW_CANDLE, 64000, 400, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.DIG_SPEED, 80, 1, false))));
         DEFAULT_LIGHTBRINGERS.put("lime_candle", new LightBringer(Items.LIME_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.JUMP, 600, 1, false), new ApplyPotionEffect(MobEffects.SLOW_FALLING, 600, 1, false))));
-        DEFAULT_LIGHTBRINGERS.put("green_candle", new LightBringer(Items.GREEN_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.LUCK, 2400, 0, false), new ApplyPotionEffect(EffectSetup.CASTER.get(), 2400, 2, false))));
+        DEFAULT_LIGHTBRINGERS.put("green_candle", new LightBringer(Items.GREEN_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.LUCK, 2400, 0, false), new ApplyPotionEffect(EffectSetup.CASTER.getHolder().get(), 2400, 2, false))));
         DEFAULT_LIGHTBRINGERS.put("cyan_candle", new LightBringer(Items.CYAN_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIREWORK_ROCKET_LAUNCH, 1, 1), new ApplyPotionEffect(MobEffects.LEVITATION, 20, 59, false))));
         DEFAULT_LIGHTBRINGERS.put("light_blue_candle", new LightBringer(Items.LIGHT_BLUE_CANDLE, 64000, 200, 0.8f, 0.5f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.WATER_BREATHING, 1200, 0, false))));
         DEFAULT_LIGHTBRINGERS.put("blue_candle", new LightBringer(Items.BLUE_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.MOVEMENT_SPEED, 80, 1, false))));
         DEFAULT_LIGHTBRINGERS.put("purple_candle", new LightBringer(Items.PURPLE_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(MobEffects.NIGHT_VISION, 460, 0, false))));
-        DEFAULT_LIGHTBRINGERS.put("magenta_candle", new LightBringer(Items.MAGENTA_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new RemovePotionEffect(EffectSetup.BUSTED.get(), false))));
-        DEFAULT_LIGHTBRINGERS.put("pink_candle", new LightBringer(Items.PINK_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(EffectSetup.DEATH_WARD.get(), 40, 0, false))));
+        DEFAULT_LIGHTBRINGERS.put("magenta_candle", new LightBringer(Items.MAGENTA_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new RemovePotionEffect(EffectSetup.BUSTED.getHolder().get(), false))));
+        DEFAULT_LIGHTBRINGERS.put("pink_candle", new LightBringer(Items.PINK_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new ApplyPotionEffect(EffectSetup.DEATH_WARD.getHolder().get(), 40, 0, false))));
         // TODO vvv Has a 3% chance to remove curses (utilizing the Forge Curse tag for mod compatibility) vvv
         DEFAULT_LIGHTBRINGERS.put("black_candle", new LightBringer(Items.BLACK_CANDLE, 64000, 200, 1.5f, 4.0f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1), new RemoveCurseEffect(0.03f))));
         DEFAULT_LIGHTBRINGERS.put("sea_pickle", new LightBringer(Items.SEA_PICKLE, true, 64000, 200, 1.0f, 0.1f, Lists.newArrayList(new PlaySound(SoundEvents.FIRE_EXTINGUISH, 1, 1))));
@@ -175,7 +175,7 @@ public class FlameConfigs {
     }
 
     public static LightBringer deserialize(JsonObject json) {
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(json.get("item").getAsString()));
+        Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(json.get("item").getAsString()));
         boolean waterOnly = json.has("waterOnly") && json.get("waterOnly").getAsBoolean();
         int maxFlame = json.get("maxFlame").getAsInt();
         int consumption = json.get("baseConsumption").getAsInt();

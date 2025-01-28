@@ -4,7 +4,8 @@ import dev.quarris.engulfingdarkness.configs.FlameConfigs;
 import dev.quarris.engulfingdarkness.darkness.burnout.BurnoutEffect;
 import net.minecraft.world.item.Item;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
 public final class LightBringer {
 

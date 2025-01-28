@@ -3,12 +3,12 @@ package dev.quarris.engulfingdarkness.capability;
 import dev.quarris.engulfingdarkness.ModRef;
 import dev.quarris.engulfingdarkness.darkness.Darkness;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
-import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nonnull;
@@ -35,12 +35,12 @@ public class DarknessProvider implements ICapabilitySerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
-        return this.lazyThis.map(INBTSerializable::serializeNBT).orElse(new CompoundTag());
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
+        return this.lazyThis.map(darkness -> darkness.serializeNBT(provider)).orElse(new CompoundTag());
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        this.lazyThis.ifPresent(darkness -> darkness.deserializeNBT(nbt));
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag) {
+        this.lazyThis.ifPresent(darkness -> darkness.deserializeNBT(provider, tag));
     }
 }

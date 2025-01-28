@@ -2,9 +2,7 @@ package dev.quarris.engulfingdarkness.packets;
 
 import dev.quarris.engulfingdarkness.registry.EffectSetup;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 public class PlayerMovedMessage {
 
@@ -16,11 +14,11 @@ public class PlayerMovedMessage {
     }
 
     public static class Handler {
-        public static void handle(PlayerMovedMessage msg, Supplier<NetworkEvent.Context> ctx) {
-            ctx.get().enqueueWork(() -> {
-                ctx.get().getSender().removeEffect(EffectSetup.SOUL_GUARD.get());
+        public static void handle(PlayerMovedMessage msg, CustomPayloadEvent.Context ctx) {
+            ctx.enqueueWork(() -> {
+                ctx.getSender().removeEffect(EffectSetup.SOUL_GUARD.getHolder().get());
             });
-            ctx.get().setPacketHandled(true);
+            ctx.setPacketHandled(true);
         }
     }
 

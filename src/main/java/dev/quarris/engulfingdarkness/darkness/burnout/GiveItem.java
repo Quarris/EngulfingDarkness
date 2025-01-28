@@ -3,8 +3,7 @@ package dev.quarris.engulfingdarkness.darkness.burnout;
 import com.google.gson.JsonObject;
 import dev.quarris.engulfingdarkness.darkness.LightBringer;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -24,9 +23,11 @@ public class GiveItem extends BurnoutEffect<GiveItem.Serializer> {
 
     @Override
     public void onBurnout(Player player, ItemStack stack, LightBringer lightBringer) {
-        ItemStack toGive = new ItemStack(this.item, this.amount);
-        if (!player.addItem(toGive)) {
-            player.spawnAtLocation(toGive);
+        if (player instanceof ServerPlayer serverPlayer) {
+            ItemStack toGive = new ItemStack(this.item, this.amount);
+            if (!serverPlayer.addItem(toGive)) {
+                serverPlayer.spawnAtLocation(serverPlayer.serverLevel(), toGive);
+            }
         }
     }
 
@@ -47,7 +48,7 @@ public class GiveItem extends BurnoutEffect<GiveItem.Serializer> {
 
         @Override
         public GiveItem deserialize(JsonObject json) {
-            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(json.get("item").getAsString()));
+            Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(json.get("item").getAsString()));
             int amount = json.get("amount").getAsInt();
             return new GiveItem(item, amount);
         }

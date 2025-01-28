@@ -2,11 +2,15 @@ package dev.quarris.engulfingdarkness.darkness.burnout;
 
 import com.google.gson.JsonObject;
 import dev.quarris.engulfingdarkness.darkness.LightBringer;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.minecraft.core.Holder;
+import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 
 import java.util.*;
 
@@ -44,9 +48,9 @@ public class RemoveCurseEffect extends BurnoutEffect<RemoveCurseEffect.Serialize
     }
 
     private static boolean isCursed(ItemStack stack) {
-        Map<Enchantment, Integer> enchants = stack.getAllEnchantments();
-        for (Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
-            if (entry.getKey().isCurse()) {
+        Set<Object2IntMap.Entry<Holder<Enchantment>>> enchants = stack.getEnchantments().entrySet();
+        for (var entry : enchants) {
+            if (entry.getKey().is(EnchantmentTags.CURSE)) {
                 return true;
             }
         }
@@ -55,10 +59,11 @@ public class RemoveCurseEffect extends BurnoutEffect<RemoveCurseEffect.Serialize
     }
 
     private static void removeCurse(ItemStack stack) {
-        Map<Enchantment, Integer> enchants = stack.getAllEnchantments();
-        List<Enchantment> curses = new ArrayList<>();
-        for (Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
-            if (entry.getKey().isCurse()) {
+        ItemEnchantments enchants = stack.getEnchantments();
+        ItemEnchantments.Mutable mutable = new ItemEnchantments.Mutable(enchants);
+        List<Holder<Enchantment>> curses = new ArrayList<>();
+        for (Object2IntMap.Entry<Holder<Enchantment>> entry : enchants.entrySet()) {
+            if (entry.getKey().is(EnchantmentTags.CURSE)) {
                 curses.add(entry.getKey());
             }
         }
@@ -68,8 +73,8 @@ public class RemoveCurseEffect extends BurnoutEffect<RemoveCurseEffect.Serialize
         }
 
         Collections.shuffle(curses);
-        enchants.remove(curses.get(0));
-        EnchantmentHelper.setEnchantments(enchants, stack);
+        mutable.removeIf(e -> e.is(curses.getFirst()));
+        EnchantmentHelper.setEnchantments(stack, mutable.toImmutable());
     }
 
     @Override

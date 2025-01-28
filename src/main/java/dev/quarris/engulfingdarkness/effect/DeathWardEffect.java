@@ -24,15 +24,15 @@ public class DeathWardEffect extends MobEffect {
 
         @SubscribeEvent
         public static void deathProtection(LivingDeathEvent event) {
-            if (event.getEntity() instanceof Player player && player.hasEffect(EffectSetup.DEATH_WARD.get())) {
-                if (!player.getLevel().isClientSide()) {
-                    ServerLevel level = ((ServerLevel) player.getLevel());
+            if (event.getEntity() instanceof Player player && player.hasEffect(EffectSetup.DEATH_WARD.getHolder().get())) {
+                if (!player.level().isClientSide()) {
+                    ServerLevel level = ((ServerLevel) player.level());
                     player.setHealth(player.getMaxHealth() * 0.25f);
-                    player.addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), 1200));
-                    player.removeEffect(EffectSetup.DEATH_WARD.get());
+                    player.addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.getHolder().get(), 1200));
+                    player.removeEffect(EffectSetup.DEATH_WARD.getHolder().get());
                     level.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, player.getX(), player.getY(), player.getZ(), 20, player.getRandom().nextDouble() - 0.5, player.getRandom().nextDouble() * 2, player.getRandom().nextDouble() - 0.5, player.getRandom().nextGaussian());
                 }
-                player.getLevel().playSound(null, player, SoundEvents.TOTEM_USE, SoundSource.PLAYERS, 1, 1);
+                player.level().playSound(null, player, SoundEvents.TOTEM_USE, SoundSource.PLAYERS, 1, 1);
                 event.setCanceled(true);
             }
         }

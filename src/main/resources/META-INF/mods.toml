@@ -10,11 +10,9 @@ displayName="${mod_name}"
 description="${mod_description}"
 
 logoFile="logo.png"
-credits=""
 authors="${mod_authors}"
 
 [[dependencies.${mod_id}]]
-
     modId="forge"
     mandatory=true
     versionRange="${forge_version_range}"

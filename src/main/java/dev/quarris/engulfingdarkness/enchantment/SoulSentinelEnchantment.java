@@ -1,15 +1,18 @@
 package dev.quarris.engulfingdarkness.enchantment;
 
-import net.minecraft.world.entity.EquipmentSlot;
+import dev.quarris.engulfingdarkness.ModRef;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentCategory;
 
-public class SoulSentinelEnchantment extends Enchantment {
-    public SoulSentinelEnchantment() {
+public class SoulSentinelEnchantment {
+
+
+    /*public SoulSentinelEnchantment() {
         super(Rarity.VERY_RARE, EnchantmentCategory.ARMOR_CHEST, new EquipmentSlot[]{EquipmentSlot.CHEST});
-    }
+    }*/
 
-    @Override
+   /* @Override
     public int getMaxLevel() {
         return 4;
     }
@@ -17,11 +20,7 @@ public class SoulSentinelEnchantment extends Enchantment {
     @Override
     public boolean isTreasureOnly() {
         return true;
-    }
+    }*/
 
-    public static int getDistance(int level) {
-        if (level > 4) level = 4;
 
-        return 15 * level;
-    }
 }

@@ -1,6 +1,7 @@
 package dev.quarris.engulfingdarkness.mixins;
 
 import dev.quarris.engulfingdarkness.registry.EffectSetup;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -17,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
 
 @Mixin(NearestAttackableTargetGoal.class)
 public abstract class NearestAttackableTargetGoalMixin<T extends LivingEntity> extends TargetGoal {
@@ -36,9 +38,14 @@ public abstract class NearestAttackableTargetGoalMixin<T extends LivingEntity> e
     @Inject(method = "findTarget", at = @At("HEAD"))
     private void nearestattackabletargetgoal_focusEasyTargets(CallbackInfo ci) {
         if (this.targetType != Player.class && this.targetType != ServerPlayer.class) {
-            this.target = this.mob.level.getNearestEntity(this.mob.level.getEntitiesOfClass(this.targetType, this.getTargetSearchArea(this.getFollowDistance() * 3.0), (entity) -> entity.hasEffect(EffectSetup.EASY_TARGET.get())), this.targetConditions, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
+            var targets = this.mob.level().getEntitiesOfClass(this.targetType, this.getTargetSearchArea(this.getFollowDistance() * 3.0), (entity) -> entity.hasEffect(EffectSetup.EASY_TARGET.getHolder().get()));
+            if (targets.isEmpty()) {
+                return;
+            }
+            targets.sort(Comparator.comparingDouble(e -> e.position().distanceTo(this.mob.position())));
+            this.target = targets.getFirst();
         } else {
-            this.target = this.mob.level.getNearestPlayer(this.mob.getX(), this.mob.getEyeY(), this.mob.getZ(), this.getFollowDistance() * 3.0, (entity) -> entity instanceof LivingEntity living && living.hasEffect(EffectSetup.EASY_TARGET.get()) && this.targetConditions.copy().range(this.getFollowDistance() * 3.0).test(this.mob, living));
+            this.target = this.mob.level().getNearestPlayer(this.mob.getX(), this.mob.getEyeY(), this.mob.getZ(), this.getFollowDistance() * 3.0, (entity) -> entity instanceof LivingEntity living && living.hasEffect(EffectSetup.EASY_TARGET.getHolder().get()) && this.targetConditions.copy().range(this.getFollowDistance() * 3.0).test((ServerLevel) this.mob.level(), this.mob, living));
         }
     }
 

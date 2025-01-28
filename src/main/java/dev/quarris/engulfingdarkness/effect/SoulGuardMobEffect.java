@@ -5,21 +5,13 @@ import dev.quarris.engulfingdarkness.packets.PacketHandler;
 import dev.quarris.engulfingdarkness.packets.PlayerMovedMessage;
 import dev.quarris.engulfingdarkness.registry.EffectSetup;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.Input;
-import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.client.player.ClientInput;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.CampfireBlock;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.player.Input;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.MovementInputUpdateEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -37,17 +29,17 @@ public class SoulGuardMobEffect extends MobEffect {
 
         @SubscribeEvent
         public static void onJoinWorld(PlayerEvent.PlayerLoggedInEvent event) {
-            event.getEntity().addEffect(new MobEffectInstance(EffectSetup.SOUL_GUARD.get(), 1000000, 0, false, false, true));
+            event.getEntity().addEffect(new MobEffectInstance(EffectSetup.SOUL_GUARD.getHolder().get(), 1000000, 0, false, false, true));
         }
 
         @SubscribeEvent
         public static void onUse(PlayerInteractEvent event) {
-            event.getEntity().removeEffect(EffectSetup.SOUL_GUARD.get());
+            event.getEntity().removeEffect(EffectSetup.SOUL_GUARD.getHolder().get());
         }
 
         @SubscribeEvent
         public static void noTarget(LivingChangeTargetEvent event) {
-            if (event.getOriginalTarget() != null && event.getOriginalTarget().hasEffect(EffectSetup.SOUL_GUARD.get())) {
+            if (event.getOriginalTarget() != null && event.getOriginalTarget().hasEffect(EffectSetup.SOUL_GUARD.getHolder().get())) {
                 event.setCanceled(true);
             }
         }
@@ -57,9 +49,9 @@ public class SoulGuardMobEffect extends MobEffect {
     public static class Client {
         @SubscribeEvent
         public static void onMoved(MovementInputUpdateEvent event) {
-            Input input = event.getInput();
+            ClientInput input = event.getInput();
             boolean hasMoved = input.getMoveVector().length() > 0.01;
-            boolean hasJumped = input.jumping;
+            boolean hasJumped = input.keyPresses.jump();
             if (hasMoved || hasJumped) {
                 PacketHandler.sendTo(new PlayerMovedMessage(), Minecraft.getInstance().player);
             }

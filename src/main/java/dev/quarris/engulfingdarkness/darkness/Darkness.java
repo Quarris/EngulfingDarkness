@@ -3,10 +3,10 @@ package dev.quarris.engulfingdarkness.darkness;
 import dev.quarris.engulfingdarkness.EnchantmentUtils;
 import dev.quarris.engulfingdarkness.ModRef;
 import dev.quarris.engulfingdarkness.configs.FlameConfigs;
-import dev.quarris.engulfingdarkness.enchantment.SoulSentinelEnchantment;
-import dev.quarris.engulfingdarkness.packets.SetLowLightMessage;
 import dev.quarris.engulfingdarkness.packets.FlameDataMessage;
 import dev.quarris.engulfingdarkness.packets.PacketHandler;
+import dev.quarris.engulfingdarkness.packets.SetLowLightMessage;
+import dev.quarris.engulfingdarkness.registry.DamageSetup;
 import dev.quarris.engulfingdarkness.registry.EffectSetup;
 import dev.quarris.engulfingdarkness.registry.EnchantmentSetup;
 import dev.quarris.engulfingdarkness.util.PlayerUtil;
@@ -14,7 +14,9 @@ import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.ObjectIntMutablePair;
 import it.unimi.dsi.fastutil.objects.ObjectIntPair;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -22,10 +24,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -107,7 +107,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     }
 
     private void updatePlayerInLowLight() {
-        if (this.player.level.isClientSide()) {
+        if (this.player.level().isClientSide()) {
             return;
         }
 
@@ -120,7 +120,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
             return;
         }
 
-        int light = this.player.level.getMaxLocalRawBrightness(new BlockPos(this.player.getEyePosition(1)));
+        int light = this.player.level().getMaxLocalRawBrightness(BlockPos.containing(this.player.getEyePosition()));
         boolean isLowLight = light <= ModRef.configs().darknessLightLevel;
         if (this.isInLowLight && !isLowLight) { // No longer in darkness
             this.setInLowLight(false);
@@ -131,19 +131,19 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     private void findSentinel() {
         // Client doesn't need to know about the sentinel
-        if (this.player.level.isClientSide()) return;
+        if (this.player.level().isClientSide()) return;
 
-        this.sentinel = this.player.level.players().stream()
+        this.sentinel = this.player.level().players().stream()
             .filter(p -> !this.player.getUUID().equals(p.getUUID()))
-            .filter(p -> !p.hasEffect(EffectSetup.BUSTED.get()))
-            .map(p -> new ObjectIntMutablePair<Player>(p, EnchantmentUtils.getEnchantment(p, EnchantmentSetup.SOUL_SENTINEL.get(), EquipmentSlot.CHEST)))
+            .filter(p -> !p.hasEffect(EffectSetup.BUSTED.getHolder().get()))
+            .map(p -> new ObjectIntMutablePair<Player>(p, EnchantmentUtils.getEnchantment(this.player, this.player.level().holderLookup(Registries.ENCHANTMENT).getOrThrow(EnchantmentSetup.SOUL_SENTINEL), EquipmentSlot.CHEST)))
             .filter(p -> p.rightInt() > 0)
-            .filter(p -> this.player.distanceTo(p.left()) <= SoulSentinelEnchantment.getDistance(p.rightInt()))
+            .filter(p -> this.player.distanceTo(p.left()) <= 15 * Math.min(4, p.rightInt()))
             .sorted(Comparator.<ObjectIntPair<Player>>comparingInt(ObjectIntPair::rightInt).thenComparing(p -> this.player.distanceTo(p.left())))
             .findFirst().orElse(null);
 
         if (this.sentinel != null) {
-            this.player.addEffect(new MobEffectInstance(new MobEffectInstance(EffectSetup.SENTINEL_PROTECTION.get(), 5, this.sentinel.right() - 1, true, true)));
+            this.player.addEffect(new MobEffectInstance(new MobEffectInstance(EffectSetup.SENTINEL_PROTECTION.getHolder().get(), 5, this.sentinel.right() - 1, true, true)));
         }
     }
 
@@ -156,7 +156,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         ItemStack stack = this.getHeldLightStack();
         FlameData flameData = this.flameData.computeIfAbsent(light, FlameData::new);
 
-        this.consumptionAmplifier = this.calculateConsumptionAmplifier(this.player.level, light);
+        this.consumptionAmplifier = this.calculateConsumptionAmplifier(this.player.level(), light);
         float consumedFlame = light.baseConsumption() * this.consumptionAmplifier;
 
         if (this.engulfLevel > 0.3) {
@@ -172,9 +172,9 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
             this.setPopup(10, 0xFFFFFFFF);
             flameData.burn(Mth.abs(remainingFlame));
             // Destroy item once burned
-            if (!this.player.level.isClientSide()) {
+            if (!this.player.level().isClientSide()) {
                 if (stack.isDamageableItem()) {
-                    stack.hurtAndBreak(1, this.player, p -> {});
+                    stack.hurtAndBreak(1, (ServerLevel) this.player.level(), (ServerPlayer) this.player, p -> {});
                 } else {
                     stack.shrink(1);
                 }
@@ -188,11 +188,11 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
         double engulfTimer = ModRef.configs().engulfTimer;
         double dangerTimer = ModRef.configs().dangerTimer;
         int resilienceLevel = -1;
-        if (this.player.hasEffect(EffectSetup.RESILIENCE.get())) {
-            resilienceLevel = this.player.getEffect(EffectSetup.RESILIENCE.get()).getAmplifier();
+        if (this.player.hasEffect(EffectSetup.RESILIENCE.getHolder().get())) {
+            resilienceLevel = this.player.getEffect(EffectSetup.RESILIENCE.getHolder().get()).getAmplifier();
         }
 
-        int valianceLevel = EnchantmentUtils.getEnchantment(this.player, EnchantmentSetup.VALIANCE.get(), EquipmentSlot.HEAD);
+        int valianceLevel = EnchantmentUtils.getEnchantment(this.player, this.player.level().holderLookup(Registries.ENCHANTMENT).getOrThrow(EnchantmentSetup.VALIANCE), EquipmentSlot.HEAD);
         if (valianceLevel > 0) {
             engulfTimer += 2 * valianceLevel;
         }
@@ -222,25 +222,25 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     }
 
     private void spawnParticles() {
-        if (!this.player.level.isClientSide() && this.isInDarkness()) {
+        if (!this.player.level().isClientSide() && this.isInDarkness()) {
             double rx = (-1 + Math.random() * 2) * 0.3;
             double ry = Math.random();
             double rz = (-1 + Math.random() * 2) * 0.3;
             double mx = this.player.getRandom().nextGaussian() * 0.2;
             double my = this.player.getRandom().nextGaussian() * 0.2;
             double mz = this.player.getRandom().nextGaussian() * 0.2;
-            ((ServerLevel) this.player.level).sendParticles(ParticleTypes.SMOKE, this.player.getX() + rx, this.player.getY() + ry, this.player.getZ() + rz, (int) (this.engulfLevel * 10), mx, my, mz, 0.01);
+            ((ServerLevel) this.player.level()).sendParticles(ParticleTypes.SMOKE, this.player.getX() + rx, this.player.getY() + ry, this.player.getZ() + rz, (int) (this.engulfLevel * 10), mx, my, mz, 0.01);
         }
     }
 
     private void playSounds() {
-        if (this.player.level.isClientSide() && this.engulfLevel == 1.0 && this.player.getRandom().nextDouble() > 0.95) {
+        if (this.player.level().isClientSide() && this.engulfLevel == 1.0 && this.player.getRandom().nextDouble() > 0.95) {
             this.player.playSound(SoundEvents.AMBIENT_CRIMSON_FOREST_MOOD.value(), 1, 0.1f);
         }
     }
 
     private void dealDarknessDamage() {
-        if (this.player.level.isClientSide()) return;
+        if (this.player.level().isClientSide()) return;
         if (this.dangerLevel != 1.0 || ModRef.configs().darknessDamage == 0) return;
 
         float healthDamageRatio = (float) ModRef.configs().darknessDamage / 100;
@@ -250,7 +250,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
             damage *= 3;
         }
 
-        int ourSentinelLevel = Math.min(EnchantmentUtils.getEnchantment(this.player, EnchantmentSetup.SOUL_SENTINEL.get(), EquipmentSlot.CHEST), 4);
+        int ourSentinelLevel = Math.min(EnchantmentUtils.getEnchantment(this.player, this.player.level().holderLookup(Registries.ENCHANTMENT).getOrThrow(EnchantmentSetup.SOUL_SENTINEL), EquipmentSlot.CHEST), 4);
 
         damage *= (float) (1 - ourSentinelLevel * 0.05);
 
@@ -259,16 +259,16 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
             damage *= (float) (1 - this.sentinel.right() * 0.075);
             float interceptedDamage = sentinelPlayer.getMaxHealth() * 0.25f;
             if (this.player.getHealth() < damage && sentinelPlayer.getHealth() > interceptedDamage) {
-                sentinelPlayer.hurt(ModRef.DARKNESS_DAMAGE_SENTINEL, interceptedDamage);
-                this.player.addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.get(), 30 * 20 / (ModRef.configs().nightmareMode ? 3 : 1)));
-                sentinelPlayer.addEffect(new MobEffectInstance(EffectSetup.BUSTED.get(), 60 * 20 * (ModRef.configs().nightmareMode ? 3 : 1)));
-                sentinelPlayer.getLevel().sendParticles(ParticleTypes.REVERSE_PORTAL, sentinelPlayer.getX(), sentinelPlayer.getY() + 1, sentinelPlayer.getZ(), 80, 0.2, 0.3, 0.2, 0.05);
+                sentinelPlayer.hurt(DamageSetup.darknessSentinelDamage(this.player.level(), this.player), interceptedDamage);
+                this.player.addEffect(new MobEffectInstance(EffectSetup.SOUL_VEIL.getHolder().get(), 30 * 20 / (ModRef.configs().nightmareMode ? 3 : 1)));
+                sentinelPlayer.addEffect(new MobEffectInstance(EffectSetup.BUSTED.getHolder().get(), 60 * 20 * (ModRef.configs().nightmareMode ? 3 : 1)));
+                ((ServerLevel) sentinelPlayer.level()).sendParticles(ParticleTypes.REVERSE_PORTAL, sentinelPlayer.getX(), sentinelPlayer.getY() + 1, sentinelPlayer.getZ(), 80, 0.2, 0.3, 0.2, 0.05);
                 return;
             }
         }
 
-        this.player.addEffect(new MobEffectInstance(EffectSetup.BUSTED.get(), 10 * 20 * (ModRef.configs().nightmareMode ? 3 : 1)));
-        this.player.hurt(ModRef.DARKNESS_DAMAGE, damage);
+        this.player.addEffect(new MobEffectInstance(EffectSetup.BUSTED.getHolder().get(), 10 * 20 * (ModRef.configs().nightmareMode ? 3 : 1)));
+        this.player.hurt(DamageSetup.darknessDamage(this.player.level()), damage);
     }
 
     public void setPopup(int time, int color) {
@@ -311,7 +311,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     }
 
     private static boolean isInRainOrUnderwater(Player player) {
-        return isPlayerInRain(player.level, player) || player.isUnderWater();
+        return isPlayerInRain(player.level(), player) || player.isUnderWater();
     }
 
     private static boolean isPlayerInRain(Level level, Player player) {
@@ -324,7 +324,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
             return false;
         } else {
             Biome biome = level.getBiome(pos).value();
-            return biome.getPrecipitation() != Biome.Precipitation.NONE;
+            return biome.getPrecipitationAt(BlockPos.containing(player.getEyePosition()), level.getSeaLevel()) != Biome.Precipitation.NONE;
         }
     }
 
@@ -352,7 +352,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
 
     @Override
     public boolean isResistant() {
-        return !ModRef.configs().isAllowed(this.player.level.dimension().location()) || this.player.isCreative() || this.player.isSpectator() || this.player.hasEffect(EffectSetup.SOUL_VEIL.get()) || this.player.hasEffect(EffectSetup.SOUL_GUARD.get()) || this.player.isOnFire();
+        return !ModRef.configs().isAllowed(this.player.level().dimension().location()) || this.player.isCreative() || this.player.isSpectator() || this.player.hasEffect(EffectSetup.SOUL_VEIL.getHolder().get()) || this.player.hasEffect(EffectSetup.SOUL_GUARD.getHolder().get()) || this.player.isOnFire();
     }
 
     @Override
@@ -366,13 +366,13 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     }
 
     public <T> void syncToClient(T packet) {
-        if (!this.player.level.isClientSide()) {
-            PacketHandler.sendToClient(packet, this.player);
+        if (!this.player.level().isClientSide()) {
+            PacketHandler.sendTo(packet, (ServerPlayer) this.player);
         }
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag nbt = new CompoundTag();
         nbt.putFloat("Darkness", this.engulfLevel);
         nbt.putFloat("Danger", this.dangerLevel);
@@ -390,7 +390,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         this.engulfLevel = nbt.getFloat("Darkness");
         this.dangerLevel = nbt.getFloat("Danger");
         this.isInLowLight = nbt.getBoolean("IsInDarkness");
@@ -399,7 +399,7 @@ public class Darkness implements IDarkness, INBTSerializable<CompoundTag> {
             ListTag lightBringersTag = nbt.getList("LightBringers", Tag.TAG_COMPOUND);
             lightBringersTag.stream().map(CompoundTag.class::cast)
                 .forEach(lightTag -> {
-                    ResourceLocation itemId = new ResourceLocation(lightTag.getString("Item"));
+                    ResourceLocation itemId = ResourceLocation.parse(lightTag.getString("Item"));
                     Item item = ForgeRegistries.ITEMS.getValue(itemId);
                     LightBringer light = LightBringer.getLightBringer(item);
                     if (light == null) {

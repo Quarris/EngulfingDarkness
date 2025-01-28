@@ -3,9 +3,7 @@ package dev.quarris.engulfingdarkness.packets;
 import dev.quarris.engulfingdarkness.ModRef;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 public class SetLowLightMessage {
 
@@ -24,9 +22,9 @@ public class SetLowLightMessage {
     }
 
     public static class Handler {
-        public static void handle(SetLowLightMessage msg, Supplier<NetworkEvent.Context> ctx) {
-            ctx.get().enqueueWork(() -> Minecraft.getInstance().player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> darkness.setInLowLight(msg.isInLowLight)));
-            ctx.get().setPacketHandled(true);
+        public static void handle(SetLowLightMessage msg, CustomPayloadEvent.Context ctx) {
+            ctx.enqueueWork(() -> Minecraft.getInstance().player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> darkness.setInLowLight(msg.isInLowLight)));
+            ctx.setPacketHandled(true);
         }
     }
 }

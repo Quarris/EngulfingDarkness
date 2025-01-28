@@ -6,7 +6,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -26,7 +25,7 @@ public class PlaySound extends BurnoutEffect<PlaySound.Serializer> {
 
     @Override
     public void onBurnout(Player player, ItemStack stack, LightBringer lightBringer) {
-        player.level.playSound(null, player, this.sound, SoundSource.PLAYERS, this.volume, this.pitch);
+        player.level().playSound(null, player, this.sound, SoundSource.PLAYERS, this.volume, this.pitch);
     }
 
     @Override
@@ -47,7 +46,7 @@ public class PlaySound extends BurnoutEffect<PlaySound.Serializer> {
 
         @Override
         public PlaySound deserialize(JsonObject json) {
-            SoundEvent sound = ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation(json.get("sound").getAsString()));
+            SoundEvent sound = ForgeRegistries.SOUND_EVENTS.getValue(ResourceLocation.parse(json.get("sound").getAsString()));
             float volume = json.get("volume").getAsInt();
             float pitch = json.get("pitch").getAsInt();
             return new PlaySound(sound, volume, pitch);

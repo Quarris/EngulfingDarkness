@@ -5,12 +5,9 @@ import dev.quarris.engulfingdarkness.darkness.LightBringer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 import net.minecraftforge.registries.ForgeRegistries;
-
-import java.util.function.Supplier;
 
 public class FlameDataMessage {
 
@@ -28,7 +25,7 @@ public class FlameDataMessage {
     }
 
     public static FlameDataMessage decode(FriendlyByteBuf buf) {
-        ResourceLocation itemId = new ResourceLocation(buf.readUtf());
+        ResourceLocation itemId = ResourceLocation.parse(buf.readUtf());
         Item item = ForgeRegistries.ITEMS.getValue(itemId);
         LightBringer light = LightBringer.getLightBringer(item);
         int flame = buf.readVarInt();
@@ -36,9 +33,9 @@ public class FlameDataMessage {
     }
 
     public static class Handler {
-        public static void handle(FlameDataMessage msg, Supplier<NetworkEvent.Context> ctx) {
-            ctx.get().enqueueWork(() -> Minecraft.getInstance().player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> darkness.setFlame(msg.light, msg.flame)));
-            ctx.get().setPacketHandled(true);
+        public static void handle(FlameDataMessage msg, CustomPayloadEvent.Context ctx) {
+            ctx.enqueueWork(() -> Minecraft.getInstance().player.getCapability(ModRef.Capabilities.DARKNESS).ifPresent(darkness -> darkness.setFlame(msg.light, msg.flame)));
+            ctx.setPacketHandled(true);
         }
     }
 }
